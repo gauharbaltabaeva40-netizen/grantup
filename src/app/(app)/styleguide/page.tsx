@@ -12,10 +12,59 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Markdown } from "@/components/content/markdown";
+import { LessonPath } from "@/components/lessons/lesson-path";
+import type { CatalogSubject } from "@/lib/content/catalog";
 import { MotionDemo } from "./motion-demo";
+import { QuizDemo } from "./quiz-demo";
 
 // Дизайн жүйесінің беті — тек әзірлеу кезінде (production-да 404).
 export const metadata: Metadata = { title: "Styleguide", robots: { index: false } };
+
+const demoSubject: CatalogSubject = {
+  id: 4,
+  code: "math",
+  title: "Математика",
+  kind: "profile",
+  icon: "sigma",
+  color: "#0047FF",
+  totalLessons: 6,
+  completedLessons: 2,
+  currentLessonId: "l3",
+  topics: [
+    {
+      id: "t1",
+      title: "Теңдеулер",
+      lessons: [
+        { id: "l1", title: "Сызықтық теңдеулер", isFree: true, status: "completed", durationSeconds: 600, xpReward: 20, topicId: "t1" },
+        { id: "l2", title: "Квадрат теңдеулер", isFree: false, status: "completed", durationSeconds: 600, xpReward: 20, topicId: "t1" },
+        { id: "l3", title: "Виет теоремасы", isFree: false, status: "current", durationSeconds: 600, xpReward: 20, topicId: "t1" },
+        { id: "l4", title: "Теңсіздіктер", isFree: false, status: "available", durationSeconds: 600, xpReward: 20, topicId: "t1" },
+      ],
+    },
+    {
+      id: "t2",
+      title: "Логарифмдер",
+      lessons: [
+        { id: "l5", title: "Логарифм анықтамасы", isFree: false, status: "locked", durationSeconds: 600, xpReward: 20, topicId: "t2" },
+        { id: "l6", title: "Логарифм қасиеттері", isFree: false, status: "locked", durationSeconds: 600, xpReward: 20, topicId: "t2" },
+      ],
+    },
+  ],
+};
+
+const demoMarkdown = `## Квадрат теңдеу
+
+$$ax^2 + bx + c = 0, \\quad a \\ne 0$$
+
+- Дискриминант: $D = b^2 - 4ac$
+- Түбірлері: $x_{1,2} = \\dfrac{-b \\pm \\sqrt{D}}{2a}$
+
+> Есте сақта: $D < 0$ болса, нақты түбір жоқ.
+
+| $x$ | $\\sin x$ | $\\cos x$ |
+| --- | --- | --- |
+| $30^\\circ$ | $\\frac{1}{2}$ | $\\frac{\\sqrt{3}}{2}$ |`;
 
 const swatches = [
   { name: "brand-sky", className: "bg-brand-sky", hex: "#0A84FF" },
@@ -113,6 +162,22 @@ export default function StyleguidePage() {
             </CardContent>
           </Card>
         </div>
+      </Section>
+
+      <Section title="Конспект (Markdown + KaTeX)">
+        <div className="rounded-2xl bg-card p-5 shadow-soft">
+          <Markdown>{demoMarkdown}</Markdown>
+        </div>
+      </Section>
+
+      <Section title="Сабақтар картасы">
+        <div className="mx-auto max-w-md">
+          <LessonPath subject={demoSubject} />
+        </div>
+      </Section>
+
+      <Section title="Тест сұрағы">
+        <QuizDemo />
       </Section>
 
       <Section title="Анимациялар">

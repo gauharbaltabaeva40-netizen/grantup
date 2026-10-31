@@ -408,6 +408,11 @@ export type Database = {
       user_has_full_access: { Args: { p_user: string }; Returns: boolean };
       rate_limit_hit: { Args: { p_key: string; p_max: number; p_window_seconds: number }; Returns: boolean };
       can_access_lesson: { Args: { p_lesson: string }; Returns: boolean };
+      level_for_xp: { Args: { p_xp: number }; Returns: number };
+      award_xp: {
+        Args: { p_user: string; p_amount: number; p_reason: string; p_ref: string };
+        Returns: { awarded: boolean; xp: number; level: number; level_up: boolean }[];
+      };
       my_league_group_ids: { Args: Record<string, never>; Returns: string[] };
       league_standings: {
         Args: { p_group: string };

@@ -157,6 +157,63 @@
   color: transparent;
 }
 
+/* Markdown мазмұны (конспект, сұрақтар, түсіндірмелер) */
+@layer components {
+  .markdown {
+    @apply space-y-3 text-[15px] leading-relaxed sm:text-base;
+  }
+  .markdown h1,
+  .markdown h2 {
+    @apply pt-1 text-lg font-extrabold tracking-tight sm:text-xl;
+  }
+  .markdown h3 {
+    @apply text-base font-bold;
+  }
+  .markdown ul {
+    @apply list-disc space-y-1.5 pl-5;
+  }
+  .markdown ol {
+    @apply list-decimal space-y-1.5 pl-5;
+  }
+  .markdown blockquote {
+    @apply rounded-xl border-l-4 border-primary bg-secondary px-4 py-3 font-medium;
+  }
+  .markdown code {
+    @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
+  }
+  .markdown pre {
+    @apply overflow-x-auto rounded-xl bg-[#0b1533] p-4 text-sm leading-6 text-[#eaf0ff];
+  }
+  .markdown pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+  .markdown table {
+    @apply block w-full overflow-x-auto text-sm;
+  }
+  .markdown th,
+  .markdown td {
+    @apply border px-3 py-2 text-left;
+  }
+  .markdown th {
+    @apply bg-muted font-semibold;
+  }
+  .markdown .katex-display {
+    @apply overflow-x-auto overflow-y-hidden py-1;
+  }
+  .markdown-inline > p {
+    @apply inline;
+  }
+  .markdown-inline pre {
+    @apply mt-2 overflow-x-auto rounded-xl bg-[#0b1533] p-3 text-sm text-[#eaf0ff];
+  }
+  .markdown-inline code {
+    @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
+  }
+  .markdown-inline pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
