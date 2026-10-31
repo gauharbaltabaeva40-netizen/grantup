@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, ListChecks, RotateCcw } from "lucide-react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
 import { SubjectIcon } from "@/components/lessons/subject-icon";
@@ -16,12 +16,32 @@ export async function generateMetadata() {
 }
 
 export default async function LessonsPage() {
-  const [t, locale] = await Promise.all([getTranslations("lessons"), getLocale()]);
+  const [t, tn, locale] = await Promise.all([getTranslations("lessons"), getTranslations("nav"), getLocale()]);
   const catalog = await getCatalog(locale);
+  const shortcuts = [
+    { href: "/practice", label: tn("practice"), icon: ListChecks, tone: "bg-secondary text-primary" },
+    { href: "/practice/mistakes", label: tn("mistakes"), icon: RotateCcw, tone: "bg-danger/10 text-danger" },
+  ];
 
   return (
     <FadeIn>
       <PageHeader title={t("title")} description={t("description")} />
+
+      {/* Жаттығу мен «Қателерім» — телефонда төменгі мәзірде жоқ, сондықтан осы жерден кіреді */}
+      <div className="mb-5 grid grid-cols-2 gap-3">
+        {shortcuts.map(({ href, label, icon: Icon, tone }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-soft outline-none transition-shadow hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-4"
+          >
+            <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${tone}`}>
+              <Icon className="size-5" aria-hidden />
+            </span>
+            <span className="min-w-0 text-sm leading-tight font-bold sm:text-[15px]">{label}</span>
+          </Link>
+        ))}
+      </div>
 
       {catalog.length === 0 ? (
         <EmptyState

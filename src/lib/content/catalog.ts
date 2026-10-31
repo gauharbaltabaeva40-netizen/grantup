@@ -185,3 +185,15 @@ export async function countQuizQuestions(topicId: string, locale: string): Promi
 }
 
 export const QUIZ_MAX_QUESTIONS = 10;
+
+/**
+ * Жаттығуға ашық тақырыптар: толық доступта — бәрі, тегін нұсқада — тегін сабағы бар тақырыптар.
+ * (Сұрақтар тақырыпқа байланған, сондықтан ақылы тақырып сұрақтары тегін оқушыға берілмейді.)
+ */
+export const getAccessibleTopicIds = cache(async (locale: string): Promise<Set<string>> => {
+  const [catalog, access] = await Promise.all([getCatalog(locale), getAccess()]);
+  const full = access.tier === "full";
+  return new Set(
+    catalog.flatMap((s) => s.topics).filter((t) => full || t.lessons.some((l) => l.isFree)).map((t) => t.id),
+  );
+});

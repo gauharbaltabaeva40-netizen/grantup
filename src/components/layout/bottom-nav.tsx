@@ -19,8 +19,8 @@ export function BottomNav({ className }: { className?: string }) {
       )}
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5">
-        {mainNav.map(({ href, labelKey, icon: Icon }) => {
-          const active = isNavActive(pathname, href);
+        {mainNav.map(({ href, labelKey, icon: Icon, also }) => {
+          const active = isNavActive(pathname, { href, also });
           return (
             <li key={href}>
               <Link
