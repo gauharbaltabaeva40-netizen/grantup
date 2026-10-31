@@ -45,7 +45,8 @@ src/lib/demo.ts              УАҚЫТША макет деректері (Supab
 Кілттер қойылмаса, қосымша **демо режимде** ашылады: беттер макет деректерімен көрінеді, кіру/тіркелу жұмыс істемейді.
 
 1. [supabase.com](https://supabase.com)-да жоба ашыңыз (аймақ: Frankfurt / eu-central-1).
-2. **SQL Editor** → `supabase/migrations/` ішіндегі файлдарды аты бойынша ретімен орындаңыз.
+2. **SQL Editor** → `supabase/migrations/` ішіндегі 5 файлды аты бойынша ретімен орындаңыз,
+   содан кейін демо деректер үшін `supabase/seed.sql`-ды орындаңыз.
    (Немесе Supabase CLI: `npx supabase link --project-ref <id>` → `npx supabase db push`.)
 3. **Authentication → Sign In / Providers → Email**: Email қосулы, **Confirm email** қосулы, құпиясөз ұзындығы ≥ 8.
 4. **Authentication → URL Configuration**:
@@ -78,3 +79,28 @@ src/lib/demo.ts              УАҚЫТША макет деректері (Supab
 2. Үшінші браузерде (немесе инкогнитода) кіріңіз → «Жаңа құрылғыны растау» экраны шығады.
 3. Админ аккаунтымен `/admin/devices` → ескі құрылғыны таңдап, «Рұқсат беру» → код шығады.
 4. Кодты үшінші браузерге енгізіңіз → кіресіз; таңдалған ескі құрылғы 10 минут ішінде ажыратылады.
+
+## Деректер базасы (3-кезең)
+
+| Топ | Кестелер |
+| --- | --- |
+| Пайдаланушы | `profiles`, `access_grants`, `devices`, `device_requests`, `notifications_settings`, `push_subscriptions` |
+| Контент | `subjects`, `topics`, `lessons`, `lesson_contents`, `lesson_videos`, `question_groups`, `questions`, `question_options`, `mock_exams`, `mock_exam_questions`, `specialties` |
+| Оқу | `lesson_progress`, `attempts`, `attempt_answers`, `user_mistakes`, `study_plans` |
+| Геймификация | `xp_events`, `achievements`, `user_achievements`, `leagues`, `league_groups`, `league_members` |
+| AI | `ai_explanations` (кэш), `ai_usage` (күндік лимит) |
+| Жүйе | `app_settings`, `security_events`, `audit_log`, `rate_limits`, `admin_emails` |
+
+**Контентті қорғау (RLS):**
+- Пән/тақырып/сабақ атаулары — кірген әр оқушыға (карта үшін). Конспект — тегін сабақта немесе толық доступта.
+- Сұрақтар, жауап нұсқалары, дұрыс жауаптар, түсіндірмелер, видео ID — API арқылы **мүлдем оқылмайды**;
+  оларды сервер доступты тексеріп, бір-бірлеп береді (anon кілт браузерде ашық, сондықтан бұл міндетті).
+- Сынақ ҰБТ жүріп жатқанда жауаптардың дұрыс/бұрысы оқушыға көрінбейді.
+- Лигада басқа оқушылардың тек лақап аты/аты мен аватары көрінеді (`league_standings()`), email емес.
+
+**Админ өзгертетін конфиг** (`app_settings`): `unt_structure` (120 сұрақ / 140 балл / 240 мин, пәндер құрамы,
+бірнеше жауапты сұрақтың балл ережесі), `diagnostic`, `ai_limits`, `league`, `xp`, `levels`.
+
+**Демо деректер** (`seed.sql`): 5 пән, 12 тақырып, 13 сабақ (әр пәннің біреуі тегін), 34 сұрақ (оның ішінде
+контекстік мәтін, бірнеше жауапты, KaTeX, Python коды), 1 сынақ ҰБТ (сұрақтары аз — демо), 5 мамандық.
+⚠️ Мамандықтардың шекті балдары — **ойдан алынған демо мәндер**, ресми мәндермен ауыстырыңыз.
