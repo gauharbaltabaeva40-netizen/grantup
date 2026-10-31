@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GrantUp.kz — ҰБТ-ға дайындық платформасы
 
-## Getting Started
+Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · Framer Motion · next-intl (қаз/орыс) · PWA.
 
-First, run the development server:
+## Іске қосу
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # 1-кезеңде кілттер міндетті емес
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Басқа командалар: `npm run build`, `npm run start`, `npm run lint`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Құрылым
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+messages/{kk,ru}.json        аудармалар (кілттер TypeScript-пен тексеріледі)
+src/app/(app)/               оқушы беттері (AppShell: бүйір мәзір / төменгі панель)
+src/app/(app)/styleguide     дизайн жүйесі беті (тек dev режимде)
+src/app/manifest.ts          PWA манифесі
+src/components/brand/        Logo, GradientCard, StatPill, ProgressRing, ContinueButton, EmptyState
+src/components/layout/       AppShell, Sidebar, BottomNav, TopBar, тіл/тақырып ауыстырғыштар
+src/components/motion/       FadeIn, XpBurst
+src/components/ui/           shadcn/ui компоненттері
+src/config/nav.ts            навигация пункттері
+src/i18n/                    next-intl баптауы (тіл NEXT_LOCALE cookie-де)
+src/lib/demo.ts              УАҚЫТША макет деректері (Supabase қосылғанда жойылады)
+```
 
-## Learn More
+## Дизайн токендері
 
-To learn more about Next.js, take a look at the following resources:
+Барлық түстер `src/app/globals.css`-те: `brand-sky #0A84FF`, `brand #0047FF`, `brand-violet #7B3FF2`,
+`success`, `danger`, `streak`, фон `#F5F8FF`; қараңғы режим `.dark` класында.
+Утилиталар: `bg-brand-gradient`, `text-brand-gradient`, `shadow-soft`, `shadow-brand`.
+Батырмалар: `variant="brand" | "white"`, `size="xl" | "2xl"`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Логотип
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`public/logo.png` және `public/icons/*`, `src/app/icon.png`, `src/app/apple-icon.png` баннерден қиылып жасалған.
+Өз файлыңызбен ауыстыру үшін сол аттармен (512×512 PNG) алмастырыңыз.
