@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
+import { siteUrl } from "@/lib/env";
 import "./globals.css";
 
 // Manrope: кириллица + қазақ әріптері (ә ғ қ ң ө ұ ү һ і) cyrillic-ext ішінде
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    metadataBase: new URL(siteUrl),
     title: { default: t("title"), template: "%s · GrantUp" },
     description: t("description"),
     applicationName: "GrantUp",

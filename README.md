@@ -39,3 +39,42 @@ src/lib/demo.ts              УАҚЫТША макет деректері (Supab
 
 `public/logo.png` және `public/icons/*`, `src/app/icon.png`, `src/app/apple-icon.png` баннерден қиылып жасалған.
 Өз файлыңызбен ауыстыру үшін сол аттармен (512×512 PNG) алмастырыңыз.
+
+## Supabase баптау (2-кезеңнен бастап)
+
+Кілттер қойылмаса, қосымша **демо режимде** ашылады: беттер макет деректерімен көрінеді, кіру/тіркелу жұмыс істемейді.
+
+1. [supabase.com](https://supabase.com)-да жоба ашыңыз (аймақ: Frankfurt / eu-central-1).
+2. **SQL Editor** → `supabase/migrations/` ішіндегі файлдарды аты бойынша ретімен орындаңыз.
+   (Немесе Supabase CLI: `npx supabase link --project-ref <id>` → `npx supabase db push`.)
+3. **Authentication → Sign In / Providers → Email**: Email қосулы, **Confirm email** қосулы, құпиясөз ұзындығы ≥ 8.
+4. **Authentication → URL Configuration**:
+   - Site URL: `http://localhost:3000` (production: `https://grantup.kz`)
+   - Redirect URLs: `http://localhost:3000/**`, `https://grantup.kz/**`
+5. **Authentication → Email Templates** (сілтеме кез келген құрылғыда ашылуы үшін):
+   - *Confirm signup*: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/device`
+   - *Reset password*: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`
+6. **Project Settings → API Keys** → `.env.local`-ға: `NEXT_PUBLIC_SUPABASE_URL`, publishable (немесе anon) кілт, secret (немесе service_role) кілт.
+7. Production-да Supabase-тің кіріктірілген поштасы сағатына бірнеше хатпен шектеледі — **Authentication → SMTP** арқылы Resend SMTP қосыңыз.
+
+**Админ:** `bekzatshemetaev24@gmail.com` осы email-мен тіркелгенде автоматты түрде `admin` рөлін алады
+(`supabase/migrations/20261101000200_admin_bootstrap.sql`). Админ панель: `/admin`.
+
+## Қолжетімділік және құрылғылар — қалай жұмыс істейді
+
+- **Freemium:** толық доступ тек админ берген, мерзімі жүріп тұрған грант болса (`access_grants`). Мерзім біткенде
+  оқушы автоматты түрде тегін нұсқаға қайтады. Тіркелмеген email-ге берілген доступ тіркелгенде өзі қосылады.
+  Тексеру: серверде `getAccess()`, дерекқорда `has_full_access()` (3-кезеңнен бастап контент RLS-інде).
+- **Құрылғылар:** бір аккаунт — ең көбі 2 белсенді құрылғы (админдерге шектеу жоқ). Құрылғы = localStorage ID + браузер
+  фингерпринті. 3-ші құрылғыдан кіргенде сұраныс `/admin/devices`-ке түседі (+ `ADMIN_NOTIFY_EMAIL`-ге хат).
+  Админ рұқсат бергенде 6 таңбалы код **сол сәтте бір рет** көрсетіледі (дерекқорда тек хэші), админ оны оқушыға өзі
+  жеткізеді. Код 24 сағат жарамды, 5 қате әрекеттен кейін бұғатталады.
+- **Қорғау қабаттары:** middleware (кіру + қолтаңбалы құрылғы cookie-і, 10 минут сайын дерекқордан қайта тексеріледі) →
+  server action ішінде `requireUser()` / `requireAdmin()` → Postgres RLS.
+- **Күдікті кіру:** 1 сағат ішінде басқа қаладан/IP-ден кіру `security_events`-ке `suspicious_login` болып жазылады.
+
+### Құрылғы шегін тексеру
+1. Аккаунтпен 2 түрлі браузерде кіріңіз (мысалы, Chrome және Safari).
+2. Үшінші браузерде (немесе инкогнитода) кіріңіз → «Жаңа құрылғыны растау» экраны шығады.
+3. Админ аккаунтымен `/admin/devices` → ескі құрылғыны таңдап, «Рұқсат беру» → код шығады.
+4. Кодты үшінші браузерге енгізіңіз → кіресіз; таңдалған ескі құрылғы 10 минут ішінде ажыратылады.

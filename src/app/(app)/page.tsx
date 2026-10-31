@@ -7,16 +7,24 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { demoStudent as s } from "@/lib/demo";
+import { getViewer } from "@/lib/viewer";
 
 export default async function HomePage() {
   const t = await getTranslations("home");
   const tc = await getTranslations("common");
+  const viewer = await getViewer();
+  // Жоспар мен болжамды балл — әзірге макет (7–9-кезеңдерде нақты деректер)
   const planPercent = Math.round((s.plan.done / s.plan.total) * 100);
+  const name = viewer?.name ?? s.name;
+  const streak = viewer?.streak ?? 0;
+  const xp = viewer?.xp ?? 0;
+  const level = viewer?.level ?? 1;
+  const targetScore = viewer?.targetScore ?? s.targetScore;
 
   return (
     <div className="space-y-5">
       <FadeIn>
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{t("greeting", { name: s.name })}</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{t("greeting", { name })}</h1>
         <p className="mt-1 text-[15px] text-muted-foreground sm:text-base">{t("subtitle")}</p>
       </FadeIn>
 
@@ -48,15 +56,15 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{tc("streak")}</p>
-              <p className="text-lg font-extrabold">{t("streakDays", { count: s.streak })}</p>
+              <p className="text-lg font-extrabold">{t("streakDays", { count: streak })}</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl shadow-soft ring-0">
           <CardContent>
-            <p className="text-sm text-muted-foreground">{t("levelLabel", { level: s.level })}</p>
-            <p className="text-lg font-extrabold">{s.xp} XP</p>
+            <p className="text-sm text-muted-foreground">{t("levelLabel", { level })}</p>
+            <p className="text-lg font-extrabold">{xp} XP</p>
             <Progress value={s.levelProgress} aria-label={tc("level")} className="mt-2 [&_[data-slot=progress-indicator]]:bg-brand-gradient [&_[data-slot=progress-track]]:h-2" />
             <p className="mt-1.5 text-xs text-muted-foreground">{t("xpToNext", { xp: s.xpToNextLevel })}</p>
           </CardContent>
@@ -71,7 +79,7 @@ export default async function HomePage() {
               <p className="text-sm text-muted-foreground">{t("predictedScore")}</p>
               <p className="flex items-center gap-1 text-[15px] font-bold">
                 <Target className="size-4 text-primary" aria-hidden />
-                {t("targetScore", { score: s.targetScore })}
+                {t("targetScore", { score: targetScore })}
               </p>
               {s.predictedScore === null && <p className="mt-0.5 text-xs text-muted-foreground">{t("noScoreYet")}</p>}
             </div>

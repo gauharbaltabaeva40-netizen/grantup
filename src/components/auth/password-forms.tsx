@@ -1,0 +1,56 @@
+"use client";
+
+import { useActionState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Field, FormMessage, PasswordInput, SubmitButton } from "@/components/forms/fields";
+import { Input } from "@/components/ui/input";
+import { requestPasswordReset, updatePassword } from "@/lib/auth/actions";
+import type { FormState } from "@/lib/auth/schemas";
+
+export function ForgotPasswordForm() {
+  const t = useTranslations("auth");
+  const [state, action] = useActionState<FormState, FormData>(requestPasswordReset, {});
+
+  if (state.ok) {
+    return (
+      <div className="space-y-5">
+        <FormMessage tone="success">{t("forgotSent")}</FormMessage>
+        <Link href="/login" className="block text-center text-sm font-semibold text-primary hover:underline">
+          {t("toLogin")}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <form action={action} className="space-y-4">
+      {state.error && <FormMessage>{t(`errors.${state.error}`)}</FormMessage>}
+      <Field label={t("email")} htmlFor="email">
+        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required defaultValue={state.values?.email} />
+      </Field>
+      <SubmitButton>{t("forgotSubmit")}</SubmitButton>
+      <Link href="/login" className="block pt-1 text-center text-sm font-semibold text-primary hover:underline">
+        {t("toLogin")}
+      </Link>
+    </form>
+  );
+}
+
+export function ResetPasswordForm() {
+  const t = useTranslations("auth");
+  const [state, action] = useActionState<FormState, FormData>(updatePassword, {});
+
+  return (
+    <form action={action} className="space-y-4">
+      {state.error && <FormMessage>{t(`errors.${state.error}`)}</FormMessage>}
+      <Field label={t("newPassword")} htmlFor="password" hint={t("passwordHint")}>
+        <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} maxLength={72} required />
+      </Field>
+      <Field label={t("confirmPassword")} htmlFor="confirm">
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" minLength={8} maxLength={72} required />
+      </Field>
+      <SubmitButton>{t("resetSubmit")}</SubmitButton>
+    </form>
+  );
+}
