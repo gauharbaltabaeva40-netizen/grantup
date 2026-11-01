@@ -14,6 +14,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Админ сұрақ суретін (≤ 2 МБ) және импорт жолдарын Server Action арқылы жібереді
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

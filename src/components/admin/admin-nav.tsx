@@ -3,12 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { KeyRound, Smartphone } from "lucide-react";
+import { BookOpen, ClipboardList, FileQuestion, KeyRound, LayoutDashboard, ScrollText, Settings, Smartphone, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/admin/devices", key: "devices", icon: Smartphone },
+  { href: "/admin", key: "overview", icon: LayoutDashboard, exact: true },
+  { href: "/admin/students", key: "students", icon: Users },
   { href: "/admin/access", key: "access", icon: KeyRound },
+  { href: "/admin/devices", key: "devices", icon: Smartphone },
+  { href: "/admin/content", key: "content", icon: BookOpen },
+  { href: "/admin/questions", key: "questions", icon: FileQuestion },
+  { href: "/admin/mocks", key: "mocks", icon: ClipboardList },
+  { href: "/admin/settings", key: "settings", icon: Settings },
+  { href: "/admin/security", key: "security", icon: ScrollText },
 ] as const;
 
 export function AdminNav() {
@@ -17,8 +24,8 @@ export function AdminNav() {
 
   return (
     <nav className="flex gap-2">
-      {items.map(({ href, key, icon: Icon }) => {
-        const active = pathname.startsWith(href);
+      {items.map(({ href, key, icon: Icon, ...rest }) => {
+        const active = "exact" in rest ? pathname === href : pathname.startsWith(href);
         return (
           <Link
             key={href}

@@ -8,7 +8,8 @@ import { Field, FormMessage } from "@/components/forms/fields";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { type AdminErrorKey, extendAccess, grantAccess, revokeAccess } from "@/lib/admin/actions";
+import { extendAccess, grantAccess, revokeAccess } from "@/lib/admin/actions";
+import type { AdminErrorKey } from "@/lib/admin/types";
 
 export type GrantView = {
   id: string;
@@ -20,7 +21,15 @@ export type GrantView = {
   state: "active" | "scheduled" | "expired" | "revoked";
 };
 
-export function GrantAccessForm({ defaultStart, defaultEnd }: { defaultStart: string; defaultEnd: string }) {
+export function GrantAccessForm({
+  defaultStart,
+  defaultEnd,
+  defaultEmail,
+}: {
+  defaultStart: string;
+  defaultEnd: string;
+  defaultEmail?: string;
+}) {
   const t = useTranslations("admin.access");
   const te = useTranslations("admin.errors");
   const [error, setError] = useState<AdminErrorKey | null>(null);
@@ -54,7 +63,7 @@ export function GrantAccessForm({ defaultStart, defaultEnd }: { defaultStart: st
       )}
       <div className="sm:col-span-2">
         <Field label={t("email")} htmlFor="grant-email">
-          <Input id="grant-email" name="email" type="email" inputMode="email" autoComplete="off" required />
+          <Input id="grant-email" name="email" type="email" inputMode="email" autoComplete="off" defaultValue={defaultEmail} required />
         </Field>
       </div>
       <Field label={t("startsAt")} htmlFor="grant-start">

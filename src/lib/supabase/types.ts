@@ -424,6 +424,24 @@ export type Database = {
       can_access_lesson: { Args: { p_lesson: string }; Returns: boolean };
       level_for_xp: { Args: { p_xp: number }; Returns: number };
       almaty_today: { Args: Record<string, never>; Returns: string };
+      admin_overview: { Args: Record<string, never>; Returns: Record<string, number | null> };
+      admin_hardest_questions: { Args: { p_min?: number; p_limit?: number }; Returns: { question_id: string; total: number; correct: number }[] };
+      admin_students: {
+        Args: { p_q?: string | null; p_access?: string | null; p_limit?: number; p_offset?: number };
+        Returns: {
+          id: string;
+          email: string;
+          full_name: string;
+          grade: GradeLevel | null;
+          level: number;
+          xp: number;
+          streak: number;
+          last_active_date: string | null;
+          created_at: string;
+          has_access: boolean;
+        }[];
+      };
+      admin_question_accuracy: { Args: { p_ids: string[] }; Returns: { question_id: string; total: number; correct: number }[] };
       league_week_start: { Args: { p_day?: string }; Returns: string };
       buy_streak_freeze: { Args: { p_user: string }; Returns: string };
       close_league_week: { Args: { p_week: string }; Returns: number };

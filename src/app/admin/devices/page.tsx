@@ -3,7 +3,7 @@ import { Inbox } from "lucide-react";
 import { DeviceRequestCard, type RequestView } from "@/components/admin/device-request-card";
 import { EmptyState } from "@/components/brand/empty-state";
 import { PageHeader } from "@/components/layout/page-header";
-import { createClient } from "@/lib/supabase/server";
+import { adminPage } from "@/lib/admin/server";
 
 export async function generateMetadata() {
   const t = await getTranslations("admin.nav");
@@ -14,9 +14,17 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDevicesPage() {
   const t = await getTranslations("admin.devices");
-  // Пайдаланушы сессиясымен — RLS тек админге рұқсат береді (code_hash бағаны оқылмайды)
-  const supabase = await createClient();
+  const supabase = await adminPage();
+  if (!supabase) {
+    return (
+      <>
+        <PageHeader title={(await getTranslations("admin.nav"))("devices")} description={t("description")} />
+        <EmptyState icon={Inbox} title={t("empty")} />
+      </>
+    );
+  }
 
+  // code_hash бағаны ешқашан оқылмайды
   const { data: requests } = await supabase
     .from("device_requests")
     .select("id, user_id, label, city, ip, status, failed_attempts, created_at")

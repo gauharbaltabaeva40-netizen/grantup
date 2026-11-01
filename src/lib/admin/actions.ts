@@ -1,31 +1,14 @@
 "use server";
 
 // Админ әрекеттері. Әрқайсысы: requireAdmin → service_role арқылы өзгеріс → audit_log.
-// 12-кезеңде толық админ-панель осы функцияларды қолданады (CSV импорт т.б. сонда қосылады).
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { emailSchema } from "@/lib/auth/schemas";
-import { AuthError, requireAdmin } from "@/lib/auth/session";
+import { requireAdmin } from "@/lib/auth/session";
 import { CODE_TTL_HOURS, generateCode, hashCode, MAX_DEVICES } from "@/lib/device/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-export type AdminErrorKey = "forbidden" | "invalid_input" | "not_found" | "choose_device" | "unknown";
-
-export type AdminResult<T = undefined> = { ok: true; data?: T } | { ok: false; error: AdminErrorKey };
-
-async function audit(actorId: string, action: string, targetType: string, targetId: string, meta = {}) {
-  const { error } = await createAdminClient()
-    .from("audit_log")
-    .insert({ actor_id: actorId, action, target_type: targetType, target_id: targetId, meta });
-  if (error) console.error("audit insert failed", error);
-}
-
-function fail(error: unknown): { ok: false; error: "forbidden" | "unknown" } {
-  if (error instanceof AuthError) return { ok: false, error: "forbidden" };
-  console.error("admin action failed", error);
-  return { ok: false, error: "unknown" };
-}
+import { audit, fail, refreshAdmin } from "./audit";
+import type { AdminResult } from "./types";
 
 // ---------------------------------------------------------------------
 // Құрылғы сұраныстары
@@ -84,7 +67,7 @@ export async function approveDeviceRequest(
       userId: request.user_id,
       replaceDeviceId,
     });
-    revalidatePath("/admin/devices");
+    refreshAdmin();
     return { ok: true, data: { code, expiresAt } };
   } catch (error) {
     return fail(error);
@@ -107,7 +90,7 @@ export async function rejectDeviceRequest(requestId: string): Promise<AdminResul
     if (!data) return { ok: false, error: "not_found" };
 
     await audit(actor.id, "device_request.reject", "device_request", requestId, { userId: data.user_id });
-    revalidatePath("/admin/devices");
+    refreshAdmin();
     return { ok: true };
   } catch (error) {
     return fail(error);
@@ -130,7 +113,7 @@ export async function revokeDevice(deviceId: string): Promise<AdminResult> {
     if (!data) return { ok: false, error: "not_found" };
 
     await audit(actor.id, "device.revoke", "device", deviceId, { userId: data.user_id, label: data.label });
-    revalidatePath("/admin/devices");
+    refreshAdmin();
     return { ok: true };
   } catch (error) {
     return fail(error);
@@ -191,7 +174,7 @@ export async function grantAccess(input: {
     if (error) throw error;
 
     await audit(actor.id, "access.grant", "access_grant", data.id, { email, startsAt, endsAt });
-    revalidatePath("/admin/access");
+    refreshAdmin();
     return { ok: true };
   } catch (error) {
     return fail(error);
@@ -217,7 +200,7 @@ export async function extendAccess(grantId: string, endsAt: string): Promise<Adm
     if (!data) return { ok: false, error: "invalid_input" };
 
     await audit(actor.id, "access.extend", "access_grant", grantId, { email: data.email, endsAt });
-    revalidatePath("/admin/access");
+    refreshAdmin();
     return { ok: true };
   } catch (error) {
     return fail(error);
@@ -240,8 +223,48 @@ export async function revokeAccess(grantId: string): Promise<AdminResult> {
     if (!data) return { ok: false, error: "not_found" };
 
     await audit(actor.id, "access.revoke", "access_grant", grantId, { email: data.email });
-    revalidatePath("/admin/access");
+    refreshAdmin();
     return { ok: true };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------------
+// CSV арқылы көп оқушыға доступ беру
+// ---------------------------------------------------------------------
+
+const bulkSchema = z.array(grantSchema).min(1).max(1000);
+
+/** Әр жол жеке тексеріледі (клиенттегі алдын ала қарау сияқты); бір жол қате болса — ештеңе сақталмайды. */
+export async function bulkGrantAccess(
+  rows: { email: string; startsAt: string; endsAt: string; note?: string }[],
+): Promise<AdminResult<{ inserted: number }>> {
+  try {
+    const actor = await requireAdmin();
+    const parsed = bulkSchema.safeParse(rows);
+    if (!parsed.success) return { ok: false, error: "invalid_input" };
+
+    const admin = createAdminClient();
+    const emails = [...new Set(parsed.data.map((r) => r.email))];
+    const { data: profiles } = await admin.from("profiles").select("id, email").in("email", emails);
+    const idByEmail = new Map((profiles ?? []).map((p) => [p.email, p.id]));
+
+    const { error } = await admin.from("access_grants").insert(
+      parsed.data.map((r) => ({
+        email: r.email,
+        user_id: idByEmail.get(r.email) ?? null,
+        starts_at: almatyDayStart(r.startsAt),
+        ends_at: new Date(new Date(almatyDayStart(r.endsAt)).getTime() + 24 * 3600_000).toISOString(),
+        granted_by: actor.id,
+        note: r.note || "CSV",
+      })),
+    );
+    if (error) throw error;
+
+    await audit(actor.id, "access.bulk_grant", "access_grant", "bulk", { count: parsed.data.length });
+    refreshAdmin();
+    return { ok: true, data: { inserted: parsed.data.length } };
   } catch (error) {
     return fail(error);
   }

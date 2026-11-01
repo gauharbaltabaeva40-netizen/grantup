@@ -6,20 +6,23 @@ import { Logo } from "@/components/brand/logo";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { isAdminDemo } from "@/lib/admin/server";
 import { getCurrentProfile } from "@/lib/auth/session";
 
-// Шағын админ-панель (2-кезең: құрылғы сұраныстары + доступ). Толық нұсқасы — 12-кезеңде.
-// Қорғау: middleware (кіру + құрылғы) → осы layout (рөл) → әр action ішінде requireAdmin() → RLS.
+// Админ-панель. Қорғау: middleware (кіру + құрылғы) → осы layout (рөл) → әр бетте adminPage()
+// → әр action ішінде requireAdmin() → RLS. Жаңа бөлімдердің интерфейсі тек қазақша.
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const profile = await getCurrentProfile();
-  if (profile?.role !== "admin") notFound();
+  if (!isAdminDemo) {
+    const profile = await getCurrentProfile();
+    if (profile?.role !== "admin") notFound();
+  }
 
   const t = await getTranslations("admin");
 
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Logo size={30} showText={false} />
           <span className="font-extrabold">{t("title")}</span>
           <div className="ml-auto flex items-center gap-1">
@@ -27,7 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <ThemeToggle />
           </div>
         </div>
-        <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 pb-3">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 pb-3">
           <AdminNav />
           <Link href="/" className="ml-auto flex shrink-0 items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-4" aria-hidden />
@@ -35,7 +38,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        {isAdminDemo && (
+          <p className="mb-5 rounded-2xl bg-streak/10 px-4 py-3 text-sm font-semibold text-streak">
+            Демо режим: Supabase кілттері қойылмаған — деректер бос, сақтау жұмыс істемейді.
+          </p>
+        )}
+        {children}
+      </main>
     </div>
   );
 }

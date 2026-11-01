@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  type AdminErrorKey,
   approveDeviceRequest,
   rejectDeviceRequest,
   revokeDevice,
 } from "@/lib/admin/actions";
+import type { AdminErrorKey } from "@/lib/admin/types";
 import { CODE_TTL_HOURS_PUBLIC } from "@/lib/device/constants";
 import { cn } from "@/lib/utils";
 
