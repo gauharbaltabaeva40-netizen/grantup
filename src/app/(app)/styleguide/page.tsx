@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Markdown } from "@/components/content/markdown";
 import { LessonPath } from "@/components/lessons/lesson-path";
 import type { CatalogSubject } from "@/lib/content/catalog";
+import { BarList, TopicHeatmap } from "@/components/mock/charts";
+import { HistoryChart } from "@/components/mock/history-chart";
 import { MotionDemo } from "./motion-demo";
 import { QuizDemo } from "./quiz-demo";
 
@@ -173,6 +175,60 @@ export default function StyleguidePage() {
       <Section title="Сабақтар картасы">
         <div className="mx-auto max-w-md">
           <LessonPath subject={demoSubject} />
+        </div>
+      </Section>
+
+      <Section title="Сынақ нәтижесі графиктері">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl bg-card p-5 shadow-soft">
+            <BarList
+              ariaLabel="Пәндер бойынша"
+              max={1}
+              rows={[
+                { key: "h", label: "Қазақстан тарихы", value: 14, max: 20, hint: "14/20 дұрыс" },
+                { key: "r", label: "Оқу сауаттылығы", value: 8, max: 10 },
+                { key: "ml", label: "Математикалық сауаттылық", value: 6, max: 10 },
+                { key: "m", label: "Математика", value: 31, max: 50 },
+                { key: "i", label: "Информатика", value: 38, max: 50 },
+              ]}
+              formatValue={(r) => `${r.value} / ${r.max}`}
+            />
+          </div>
+          <div className="rounded-2xl bg-card p-5 shadow-soft">
+            <HistoryChart
+              ariaLabel="Балл динамикасы"
+              yMax={140}
+              points={[
+                { attemptId: "a", finishedAt: "2026-09-10", score: 78, maxScore: 140, current: false },
+                { attemptId: "b", finishedAt: "2026-09-24", score: 86, maxScore: 140, current: false },
+                { attemptId: "c", finishedAt: "2026-10-08", score: 84, maxScore: 140, current: false },
+                { attemptId: "d", finishedAt: "2026-10-22", score: 97, maxScore: 140, current: true },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="rounded-2xl bg-card p-5 shadow-soft">
+          <TopicHeatmap
+            legendLow="0%"
+            legendHigh="100%"
+            groups={[
+              {
+                title: "Математика",
+                topics: [
+                  { id: "1", title: "Теңдеулер", percent: 90, correct: 9, total: 10 },
+                  { id: "2", title: "Функциялар және логарифмдер", percent: 55, correct: 6, total: 11 },
+                  { id: "3", title: "Тригонометрия", percent: 25, correct: 2, total: 8 },
+                ],
+              },
+              {
+                title: "Информатика",
+                topics: [
+                  { id: "4", title: "Санау жүйелері", percent: 70, correct: 7, total: 10 },
+                  { id: "5", title: "Алгоритмдер және Python", percent: 40, correct: 4, total: 10 },
+                ],
+              },
+            ]}
+          />
         </div>
       </Section>
 

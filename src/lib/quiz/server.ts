@@ -144,33 +144,14 @@ export async function gradeAndStore(
   }
 
   let xpAwarded = 0;
-  const { data: mistake } = await admin
-    .from("user_mistakes")
-    .select("wrong_count, resolved_at")
-    .eq("user_id", attempt.user_id)
-    .eq("question_id", questionId)
-    .maybeSingle();
+  const resolved = await updateMistake(attempt.user_id, questionId, grade.isCorrect);
 
-  if (!grade.isCorrect) {
-    await admin.from("user_mistakes").upsert({
-      user_id: attempt.user_id,
-      question_id: questionId,
-      wrong_count: (mistake?.wrong_count ?? 0) + 1,
-      last_wrong_at: new Date().toISOString(),
-      resolved_at: null,
-    });
-  } else {
-    const today = almatyToday();
-    const award = await awardXp(attempt.user_id, xp.questionCorrect, "question_correct", `${questionId}:${today}`);
+  if (grade.isCorrect) {
+    const award = await awardXp(attempt.user_id, xp.questionCorrect, "question_correct", `${questionId}:${almatyToday()}`);
     if (award?.awarded) xpAwarded += xp.questionCorrect;
 
     // Бұрынғы қате түзелді → қосымша XP
-    if (mistake && !mistake.resolved_at) {
-      await admin
-        .from("user_mistakes")
-        .update({ resolved_at: new Date().toISOString() })
-        .eq("user_id", attempt.user_id)
-        .eq("question_id", questionId);
+    if (resolved) {
       const fixed = await awardXp(attempt.user_id, xp.mistakeFixed, "mistake_fixed", `${questionId}:${attempt.id}`);
       if (fixed?.awarded) xpAwarded += xp.mistakeFixed;
     }
@@ -185,6 +166,41 @@ export async function gradeAndStore(
     explanation: question.explanation,
     xpAwarded,
   };
+}
+
+/**
+ * «Қателерім» тізімін жаңарту: қате → тізімге (қате саны +1), дұрыс → ашық қате болса түзелді деп белгілеу.
+ * Қайтарады: true — бұрынғы қате дәл қазір түзелді.
+ */
+export async function updateMistake(userId: string, questionId: string, isCorrect: boolean): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data: mistake } = await admin
+    .from("user_mistakes")
+    .select("wrong_count, resolved_at")
+    .eq("user_id", userId)
+    .eq("question_id", questionId)
+    .maybeSingle();
+
+  if (!isCorrect) {
+    await admin.from("user_mistakes").upsert({
+      user_id: userId,
+      question_id: questionId,
+      wrong_count: (mistake?.wrong_count ?? 0) + 1,
+      last_wrong_at: new Date().toISOString(),
+      resolved_at: null,
+    });
+    return false;
+  }
+
+  if (mistake && !mistake.resolved_at) {
+    await admin
+      .from("user_mistakes")
+      .update({ resolved_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .eq("question_id", questionId);
+    return true;
+  }
+  return false;
 }
 
 /** Әрекетті аяқтау: дұрыс жауаптар саны мен балл есептеледі. */
