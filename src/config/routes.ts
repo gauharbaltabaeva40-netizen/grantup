@@ -4,7 +4,7 @@
 export const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/check-email"];
 
 /** Кірусіз де, кірген күйде де ашылатын беттер. */
-export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest"];
+export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest", "/api/cron"];
 
 /** Кіру керек, бірақ құрылғы тексерілмейді (құрылғыны тіркеу беті). */
 export const DEVICE_ROUTE = "/device";

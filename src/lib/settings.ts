@@ -45,7 +45,13 @@ export type DiagnosticSettings = {
   perSubject: Record<string, number>;
 };
 
+export type LevelDef = { level: number; xp: number; name_kk: string; name_ru: string };
+
+export type LeagueSettings = { groupSize: number; promote: number; demote: number };
+
 type Settings = {
+  levels: LevelDef[];
+  league: LeagueSettings;
   xp: XpSettings;
   unt_structure: UntStructure;
   ai_limits: AiLimits;
@@ -53,6 +59,12 @@ type Settings = {
 };
 
 const DEFAULTS: Settings = {
+  levels: [
+    { level: 1, xp: 0, name_kk: "Бастаушы", name_ru: "Новичок" },
+    { level: 2, xp: 100, name_kk: "Ізденуші", name_ru: "Искатель" },
+    { level: 3, xp: 300, name_kk: "Талапкер", name_ru: "Абитуриент" },
+  ],
+  league: { groupSize: 30, promote: 7, demote: 5 },
   xp: {
     lessonComplete: 20,
     questionCorrect: 2,
@@ -87,7 +99,9 @@ export const getSetting = cache(async <K extends keyof Settings>(key: K): Promis
   if (!isSupabaseConfigured) return DEFAULTS[key];
   try {
     const { data } = await createAdminClient().from("app_settings").select("value").eq("key", key).maybeSingle();
-    return data ? ({ ...DEFAULTS[key], ...(data.value as object) } as Settings[K]) : DEFAULTS[key];
+    if (!data) return DEFAULTS[key];
+    // Массив конфигтер (деңгейлер) тұтас ауыстырылады, объектілер әдепкі мәндермен біріктіріледі
+    return (Array.isArray(data.value) ? data.value : { ...DEFAULTS[key], ...(data.value as object) }) as Settings[K];
   } catch (error) {
     console.error(`getSetting(${key}) failed`, error);
     return DEFAULTS[key];

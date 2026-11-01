@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Flame, Target, Trophy } from "lucide-react";
 import { ContinueButton } from "@/components/brand/continue-button";
 import { GradientCard } from "@/components/brand/gradient-card";
@@ -8,6 +8,7 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { demoStudent as s } from "@/lib/demo";
+import { getLeagueView } from "@/lib/gamification/data";
 import { getTodayPlan } from "@/lib/plan/data";
 import { planItemHref } from "@/lib/plan/types";
 import { getViewer } from "@/lib/viewer";
@@ -26,8 +27,10 @@ export default async function HomePage() {
   const name = viewer?.name ?? s.name;
   const streak = viewer?.streak ?? 0;
   const xp = viewer?.xp ?? 0;
-  const level = viewer?.level ?? 1;
+  const level = viewer?.level;
   const targetScore = viewer?.targetScore ?? s.targetScore;
+  const tl = await getTranslations("leagueView");
+  const league = viewer && !viewer.demo ? await getLeagueView(await getLocale()) : null;
 
   return (
     <div className="space-y-5">
@@ -80,10 +83,13 @@ export default async function HomePage() {
 
         <Card className="rounded-2xl shadow-soft ring-0">
           <CardContent>
-            <p className="text-sm text-muted-foreground">{t("levelLabel", { level })}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("levelLabel", { level: level?.level ?? 1 })}
+              {level?.name ? ` · ${level.name}` : ""}
+            </p>
             <p className="text-lg font-extrabold">{xp} XP</p>
-            <Progress value={s.levelProgress} aria-label={tc("level")} className="mt-2 [&_[data-slot=progress-indicator]]:bg-brand-gradient [&_[data-slot=progress-track]]:h-2" />
-            <p className="mt-1.5 text-xs text-muted-foreground">{t("xpToNext", { xp: s.xpToNextLevel })}</p>
+            <Progress value={level?.progress ?? 0} aria-label={tc("level")} className="mt-2 [&_[data-slot=progress-indicator]]:bg-brand-gradient [&_[data-slot=progress-track]]:h-2" />
+            {level?.xpToNext != null && <p className="mt-1.5 text-xs text-muted-foreground">{t("xpToNext", { xp: level.xpToNext })}</p>}
           </CardContent>
         </Card>
 
@@ -121,7 +127,21 @@ export default async function HomePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-[15px] leading-relaxed text-muted-foreground">{t("leagueEmpty")}</p>
+            {league?.myRank ? (
+              <Link href="/league" className="flex items-center gap-3 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+                <span className="grid size-12 place-items-center rounded-2xl text-lg font-extrabold text-white" style={{ backgroundColor: league.tier.color }}>
+                  {league.myRank}
+                </span>
+                <span>
+                  <span className="block font-bold">{league.tier.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {tl("rank", { rank: league.myRank })} · {tl("weeklyXp", { xp: league.standings.find((m) => m.isMe)?.weeklyXp ?? 0 })}
+                  </span>
+                </span>
+              </Link>
+            ) : (
+              <p className="text-[15px] leading-relaxed text-muted-foreground">{t("leagueEmpty")}</p>
+            )}
           </CardContent>
         </Card>
       </FadeIn>

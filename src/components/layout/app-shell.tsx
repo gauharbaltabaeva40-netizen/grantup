@@ -1,9 +1,15 @@
+import { getLocale } from "next-intl/server";
+import { Celebrations } from "@/components/gamification/celebrations";
+import { getCelebrations } from "@/lib/gamification/data";
+import { isSupabaseConfigured } from "@/lib/env";
 import { BottomNav } from "./bottom-nav";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
 /** Телефонда: жоғарғы жолақ + төменгі навигация. Компьютерде (lg+): сол жақ бүйір мәзір. */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export async function AppShell({ children }: { children: React.ReactNode }) {
+  const celebrations = isSupabaseConfigured ? await getCelebrations(await getLocale()) : null;
+
   return (
     <div className="min-h-dvh">
       <Sidebar className="fixed inset-y-0 left-0 z-40 hidden w-64 lg:flex" />
@@ -14,6 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <BottomNav className="lg:hidden" />
+      {celebrations && <Celebrations data={celebrations} />}
     </div>
   );
 }

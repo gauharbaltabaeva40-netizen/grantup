@@ -37,6 +37,8 @@ export type Profile = {
   league_tier: number;
   target_specialty_id: string | null;
   onboarding_completed_at: string | null;
+  celebrated_level: number;
+  celebrated_streak_date: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -306,7 +308,7 @@ export type Achievement = {
   xp_reward: number;
   position: number;
 };
-export type UserAchievement = { user_id: string; achievement_code: string; earned_at: string };
+export type UserAchievement = { user_id: string; achievement_code: string; earned_at: string; seen_at: string | null };
 
 export type League = { tier: number; code: string; name_kk: string; name_ru: string; color: string };
 export type LeagueGroup = { id: string; tier: number; week_start: string; closed_at: string | null; created_at: string };
@@ -409,6 +411,11 @@ export type Database = {
       rate_limit_hit: { Args: { p_key: string; p_max: number; p_window_seconds: number }; Returns: boolean };
       can_access_lesson: { Args: { p_lesson: string }; Returns: boolean };
       level_for_xp: { Args: { p_xp: number }; Returns: number };
+      almaty_today: { Args: Record<string, never>; Returns: string };
+      league_week_start: { Args: { p_day?: string }; Returns: string };
+      buy_streak_freeze: { Args: { p_user: string }; Returns: string };
+      close_league_week: { Args: { p_week: string }; Returns: number };
+      check_achievements: { Args: { p_user: string }; Returns: string[] };
       ai_usage_hit: { Args: { p_user: string; p_day: string; p_kind: string; p_max: number }; Returns: boolean };
       ai_usage_refund: { Args: { p_user: string; p_day: string; p_kind: string }; Returns: undefined };
       award_xp: {

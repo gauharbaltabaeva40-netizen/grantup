@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { getFormatter, getTranslations } from "next-intl/server";
-import { ChevronRight, LogOut, Monitor, ShieldCheck, Smartphone, UserRound } from "lucide-react";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { Award, ChevronRight, Lock, LogOut, Monitor, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { PlaceholderPage, placeholderMetadata } from "@/components/layout/placeholder-page";
 import { PageHeader } from "@/components/layout/page-header";
 import { FadeIn } from "@/components/motion/fade-in";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StreakFreezeCard } from "@/components/gamification/streak-freeze-card";
 import { getAccess } from "@/lib/access";
+import { getAchievements } from "@/lib/gamification/data";
+import { getSetting } from "@/lib/settings";
 import { signOut } from "@/lib/auth/actions";
 import { getCurrentDeviceId, getSessionUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +33,13 @@ export default async function ProfilePage() {
     getAccess(),
     getCurrentDeviceId(),
   ]);
+
+  const [tach, achievements, xpSettings] = await Promise.all([
+    getTranslations("achievements"),
+    getAchievements(await getLocale()),
+    getSetting("xp"),
+  ]);
+  const earnedCount = achievements.filter((a) => a.earnedAt).length;
 
   const supabase = await createClient();
   const { data: devices } = await supabase
@@ -67,6 +77,39 @@ export default async function ProfilePage() {
               <ChevronRight aria-hidden />
             </Link>
           )}
+        </CardContent>
+      </Card>
+
+      <StreakFreezeCard freezes={viewer.streakFreezes} xp={viewer.xp} cost={xpSettings.streakFreezeCost} />
+
+      <Card className="rounded-2xl shadow-soft ring-0">
+        <CardHeader>
+          <CardTitle className="text-base font-bold">{tach("title")}</CardTitle>
+          <CardDescription>{tach("earned", { count: earnedCount, total: achievements.length })}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {achievements.map((a) => (
+              <li
+                key={a.code}
+                title={a.description}
+                className={cn("flex items-center gap-2.5 rounded-xl p-2.5", a.earnedAt ? "bg-secondary" : "bg-muted/60 opacity-60")}
+              >
+                <span
+                  className={cn(
+                    "grid size-9 shrink-0 place-items-center rounded-xl",
+                    a.earnedAt ? "bg-brand-gradient text-white" : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {a.earnedAt ? <Award className="size-5" aria-hidden /> : <Lock className="size-4" aria-hidden />}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold">{a.title}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{a.earnedAt ? a.description : tach("locked")}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </CardContent>
       </Card>
 
