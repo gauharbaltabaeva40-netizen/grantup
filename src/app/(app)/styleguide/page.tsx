@@ -17,6 +17,7 @@ import { LessonPath } from "@/components/lessons/lesson-path";
 import type { CatalogSubject } from "@/lib/content/catalog";
 import { BarList, TopicHeatmap } from "@/components/mock/charts";
 import { HistoryChart } from "@/components/mock/history-chart";
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { MotionDemo } from "./motion-demo";
 import { QuizDemo } from "./quiz-demo";
 
@@ -227,6 +228,20 @@ export default function StyleguidePage() {
                   { id: "5", title: "Алгоритмдер және Python", percent: 40, correct: 4, total: 10 },
                 ],
               },
+            ]}
+          />
+        </div>
+      </Section>
+
+      <Section title="Онбординг">
+        <div className="mx-auto max-w-xl rounded-3xl border border-dashed p-4">
+          <OnboardingFlow
+            initialTarget={null}
+            diagnosticCount={20}
+            diagnosticMinutes={20}
+            specialties={[
+              { id: "00000000-0000-4000-8000-000000000001", code: "B057", name: "Ақпараттық технологиялар", threshold: 110 },
+              { id: "00000000-0000-4000-8000-000000000002", code: "B058", name: "Ақпараттық қауіпсіздік", threshold: 115 },
             ]}
           />
         </div>

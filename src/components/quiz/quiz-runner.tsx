@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { getQuizQuestion, submitQuizAnswer } from "@/lib/quiz/actions";
 import type { ActionResult, QuizErrorKey, QuizQuestion, QuizResult } from "@/lib/quiz/types";
 import { cn } from "@/lib/utils";
+import { AiExplain } from "./ai-explain";
 import { QuestionCard } from "./question-card";
 
 export type QuizRunnerProps = {
@@ -23,12 +24,16 @@ export type QuizRunnerProps = {
   intro: React.ReactNode;
   startLabel: string;
   renderResult: (args: { result: QuizResult; xpTotal: number; restart: () => void; pending: boolean }) => React.ReactNode;
+  /** false — дұрыс/қате көрсетілмейді, жауаптан кейін бірден келесі сұрақ (диагностика) */
+  instantFeedback?: boolean;
+  /** Сұрақ экранының үстіндегі қосымша жолақ (мысалы, таймер) */
+  header?: React.ReactNode;
 };
 
 type View = { step: "intro" } | { step: "question"; question: QuizQuestion } | { step: "result"; result: QuizResult };
 
 /** Тест ағыны: сұрақтар серверден бір-бірлеп келеді, әр жауап бірден тексеріледі (дұрыс жауап клиентте жоқ). */
-export function QuizRunner({ start, finish, intro, startLabel, renderResult }: QuizRunnerProps) {
+export function QuizRunner({ start, finish, intro, startLabel, renderResult, instantFeedback = true, header }: QuizRunnerProps) {
   const t = useTranslations("quiz");
   const router = useRouter();
   const [view, setView] = useState<View>({ step: "intro" });
@@ -76,6 +81,7 @@ export function QuizRunner({ start, finish, intro, startLabel, renderResult }: Q
       const { question } = view;
       const result = await submitQuizAnswer(question.attemptId, question.questionId, selected);
       if (!result.ok) return setError(result.error);
+      if (!instantFeedback) return advance(question);
       setView({ step: "question", question: { ...question, feedback: result.data } });
       if (result.data.xpAwarded > 0) {
         setXpTotal((x) => x + result.data.xpAwarded);
@@ -83,18 +89,24 @@ export function QuizRunner({ start, finish, intro, startLabel, renderResult }: Q
       }
     });
 
+  const advance = async (question: QuizQuestion) => {
+    if (question.index + 1 < question.total) return loadQuestion(question.attemptId, question.index + 1);
+    return complete(question.attemptId);
+  };
+
+  const complete = async (attemptId: string) => {
+    const result = await finish(attemptId);
+      if (!result.ok) return setError(result.error);
+    setXpTotal((x) => x + result.data.lessonXp);
+    setView({ step: "result", result: result.data });
+    if (result.data.levelUp && result.data.level) toast.success(t("levelUp", { level: result.data.level }));
+    router.refresh();
+  };
+
   const next = () =>
     run(async () => {
       if (view.step !== "question") return;
-      const { question } = view;
-      if (question.index + 1 < question.total) return loadQuestion(question.attemptId, question.index + 1);
-
-      const result = await finish(question.attemptId);
-      if (!result.ok) return setError(result.error);
-      setXpTotal((x) => x + result.data.lessonXp);
-      setView({ step: "result", result: result.data });
-      if (result.data.levelUp && result.data.level) toast.success(t("levelUp", { level: result.data.level }));
-      router.refresh();
+      await advance(view.question);
     });
 
   if (view.step === "intro") {
@@ -126,6 +138,7 @@ export function QuizRunner({ start, finish, intro, startLabel, renderResult }: Q
 
   return (
     <div className="space-y-5">
+      {header}
       <div className="flex items-center gap-3">
         <Progress
           value={progress}
@@ -165,6 +178,7 @@ export function QuizRunner({ start, finish, intro, startLabel, renderResult }: Q
               <Markdown className="text-[15px]">{feedback.explanation}</Markdown>
             </div>
           )}
+          {!feedback.isCorrect && <AiExplain key={question.questionId} attemptId={question.attemptId} questionId={question.questionId} />}
         </div>
       )}
 

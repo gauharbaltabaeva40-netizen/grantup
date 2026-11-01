@@ -409,6 +409,8 @@ export type Database = {
       rate_limit_hit: { Args: { p_key: string; p_max: number; p_window_seconds: number }; Returns: boolean };
       can_access_lesson: { Args: { p_lesson: string }; Returns: boolean };
       level_for_xp: { Args: { p_xp: number }; Returns: number };
+      ai_usage_hit: { Args: { p_user: string; p_day: string; p_kind: string; p_max: number }; Returns: boolean };
+      ai_usage_refund: { Args: { p_user: string; p_day: string; p_kind: string }; Returns: undefined };
       award_xp: {
         Args: { p_user: string; p_amount: number; p_reason: string; p_ref: string };
         Returns: { awarded: boolean; xp: number; level: number; level_up: boolean }[];

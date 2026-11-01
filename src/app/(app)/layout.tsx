@@ -1,5 +1,11 @@
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { getCurrentProfile } from "@/lib/auth/session";
 
-export default function StudentLayout({ children }: { children: React.ReactNode }) {
+export default async function StudentLayout({ children }: { children: React.ReactNode }) {
+  // Жаңа оқушы алдымен онбордингтен өтеді (админдерден басқа)
+  const profile = await getCurrentProfile();
+  if (profile && !profile.onboarding_completed_at && profile.role !== "admin") redirect("/onboarding");
+
   return <AppShell>{children}</AppShell>;
 }

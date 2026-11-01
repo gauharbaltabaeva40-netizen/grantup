@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { getAccess } from "@/lib/access";
 import { AuthError, requireUser } from "@/lib/auth/session";
 import { loadOwnedAttempt, loadQuestionPayload } from "@/lib/quiz/server";
 import type { QuizQuestion } from "@/lib/quiz/types";
 import { rateLimit } from "@/lib/rate-limit";
+import { generateStudyPlan } from "@/lib/plan/server";
 import { getSetting } from "@/lib/settings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildMockLayout, finalizeMock, isPastDeadline } from "./server";
@@ -165,6 +167,8 @@ export async function finishMock(attemptId: string): Promise<MockResult<{ attemp
     if (!attempt) return err("not_found");
     if (attempt.status === "in_progress") {
       await finalizeMock(attempt, isPastDeadline(attempt) ? "expired" : "finished");
+      // Сынақ нәтижесі бойынша жеке жоспарды жауап жіберілгеннен кейін жаңартамыз (оқушы күтпейді)
+      after(() => generateStudyPlan(user.id, "mock", attempt.id).then(() => undefined));
     }
     revalidatePath("/mock-exam", "layout");
     return { ok: true, data: { attemptId } };

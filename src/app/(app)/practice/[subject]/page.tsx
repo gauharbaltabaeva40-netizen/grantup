@@ -7,7 +7,7 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { PracticeSetup } from "@/components/practice/practice-setup";
 import { getPracticeCatalog } from "@/lib/practice/data";
 
-type Params = { params: Promise<{ subject: string }> };
+type Params = { params: Promise<{ subject: string }>; searchParams?: Promise<{ topic?: string }> };
 
 export async function generateMetadata({ params }: Params) {
   const { subject: code } = await params;
@@ -16,8 +16,9 @@ export async function generateMetadata({ params }: Params) {
   return { title: subject ? `${t("navLabel")}: ${subject.title}` : t("title") };
 }
 
-export default async function PracticeSubjectPage({ params }: Params) {
+export default async function PracticeSubjectPage({ params, searchParams }: Params) {
   const { subject: code } = await params;
+  const { topic } = (await searchParams) ?? {};
   const [t, subjects] = await Promise.all([getTranslations("practice"), getPracticeCatalog(await getLocale())]);
   const subject = subjects.find((s) => s.code === code);
   if (!subject) notFound();
@@ -39,7 +40,11 @@ export default async function PracticeSubjectPage({ params }: Params) {
 
       <section className="rounded-2xl bg-card p-5 shadow-soft sm:p-6">
         {subject.availableQuestions > 0 ? (
-          <PracticeSetup subjectCode={subject.code} topics={subject.topics} />
+          <PracticeSetup
+            subjectCode={subject.code}
+            topics={subject.topics}
+            initialTopicId={subject.topics.some((tp) => tp.id === topic && !tp.locked) ? topic! : null}
+          />
         ) : (
           <p className="text-muted-foreground">{t("noQuestions")}</p>
         )}

@@ -12,9 +12,17 @@ import type { PracticeTopic } from "@/lib/practice/data";
 import { cn } from "@/lib/utils";
 
 /** Жаттығу: тақырып пен сұрақ санын таңдап, тест ағынын бастау. */
-export function PracticeSetup({ subjectCode, topics }: { subjectCode: string; topics: PracticeTopic[] }) {
+export function PracticeSetup({
+  subjectCode,
+  topics,
+  initialTopicId = null,
+}: {
+  subjectCode: string;
+  topics: PracticeTopic[];
+  initialTopicId?: string | null;
+}) {
   const t = useTranslations("practice");
-  const [topicId, setTopicId] = useState<string | null>(null);
+  const [topicId, setTopicId] = useState<string | null>(initialTopicId);
   const [size, setSize] = useState<PracticeSize>(10);
 
   const optionClass = (active: boolean, disabled = false) =>

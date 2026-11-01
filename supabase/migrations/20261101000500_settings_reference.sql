@@ -51,7 +51,7 @@ insert into public.app_settings (key, value, description) values
 ),
 (
   'ai_limits',
-  '{ "paidDailyExplanations": 30, "freeDailyExplanations": 3, "planRegenerationsPerWeek": 3, "model": "claude-sonnet-5-5" }'::jsonb,
+  '{ "paidDailyExplanations": 30, "freeDailyExplanations": 3, "planRegenerationsPerWeek": 3, "model": "claude-opus-5-5" }'::jsonb,
   'AI-тьютор лимиттері (бір оқушыға, Asia/Almaty тәулігі)'
 ),
 (

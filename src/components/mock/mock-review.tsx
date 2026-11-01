@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { Markdown } from "@/components/content/markdown";
 import { FormMessage } from "@/components/forms/fields";
+import { AiExplain } from "@/components/quiz/ai-explain";
 import { QuestionCard } from "@/components/quiz/question-card";
 import { Button } from "@/components/ui/button";
 import { getMockReviewQuestion } from "@/lib/mock/actions";
@@ -66,6 +67,11 @@ export function MockReview({ state }: { state: MockReviewState }) {
                 <div className="mt-5 rounded-2xl bg-secondary p-4">
                   <p className="mb-1 text-sm font-bold">{tq("explanation")}</p>
                   <Markdown className="text-[15px]">{question.feedback.explanation}</Markdown>
+                </div>
+              )}
+              {status !== "correct" && (
+                <div className="mt-4">
+                  <AiExplain key={question.questionId} attemptId={state.attemptId} questionId={question.questionId} />
                 </div>
               )}
             </>

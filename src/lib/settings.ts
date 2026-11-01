@@ -33,9 +33,23 @@ export type UntStructure = {
   scoring: ScoringRules;
 };
 
+export type AiLimits = {
+  paidDailyExplanations: number;
+  freeDailyExplanations: number;
+  planRegenerationsPerWeek: number;
+  model: string;
+};
+
+export type DiagnosticSettings = {
+  durationMinutes: number;
+  perSubject: Record<string, number>;
+};
+
 type Settings = {
   xp: XpSettings;
   unt_structure: UntStructure;
+  ai_limits: AiLimits;
+  diagnostic: DiagnosticSettings;
 };
 
 const DEFAULTS: Settings = {
@@ -56,6 +70,16 @@ const DEFAULTS: Settings = {
     maxScore: 140,
     sections: [],
     scoring: DEFAULT_SCORING,
+  },
+  ai_limits: {
+    paidDailyExplanations: 30,
+    freeDailyExplanations: 3,
+    planRegenerationsPerWeek: 3,
+    model: "claude-opus-5-5",
+  },
+  diagnostic: {
+    durationMinutes: 20,
+    perSubject: { history_kz: 4, reading_literacy: 3, math_literacy: 3, math: 5, informatics: 5 },
   },
 };
 

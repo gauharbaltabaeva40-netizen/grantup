@@ -92,7 +92,7 @@ export async function getQuizQuestion(attemptId: string, index: number): Promise
     const user = await requireUser();
     if (!z.uuid().safeParse(attemptId).success || !Number.isInteger(index) || index < 0) return err("invalid_input");
 
-    const attempt = await loadOwnedAttempt(attemptId, user.id, ["lesson_quiz", "practice", "mistakes"]);
+    const attempt = await loadOwnedAttempt(attemptId, user.id, ["lesson_quiz", "practice", "mistakes", "diagnostic"]);
     if (!attempt) return err("not_found");
     if (attempt.lesson_id && !(await canAccessLesson(attempt.lesson_id))) return err("locked");
 
@@ -116,7 +116,7 @@ export async function submitQuizAnswer(
     if (!parsed.success) return err("invalid_input");
     if (!(await rateLimit(`quiz:answer:${user.id}`, 60, 60))) return err("rate_limited");
 
-    const attempt = await loadOwnedAttempt(attemptId, user.id, ["lesson_quiz", "practice", "mistakes"]);
+    const attempt = await loadOwnedAttempt(attemptId, user.id, ["lesson_quiz", "practice", "mistakes", "diagnostic"]);
     if (!attempt || attempt.status !== "in_progress") return err("not_found");
 
     const result = await gradeAndStore(attempt, questionId, parsed.data.selected);

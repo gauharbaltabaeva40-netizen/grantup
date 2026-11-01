@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Flame, Target, Trophy } from "lucide-react";
 import { ContinueButton } from "@/components/brand/continue-button";
@@ -7,14 +8,21 @@ import { FadeIn } from "@/components/motion/fade-in";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { demoStudent as s } from "@/lib/demo";
+import { getTodayPlan } from "@/lib/plan/data";
+import { planItemHref } from "@/lib/plan/types";
 import { getViewer } from "@/lib/viewer";
 
 export default async function HomePage() {
   const t = await getTranslations("home");
   const tc = await getTranslations("common");
+  const tp = await getTranslations("plan");
   const viewer = await getViewer();
-  // Жоспар мен болжамды балл — әзірге макет (7–9-кезеңдерде нақты деректер)
-  const planPercent = Math.round((s.plan.done / s.plan.total) * 100);
+  // Бүгінгі жоспар — оқушының белсенді жоспарынан; демо режимде макет. Болжамды балл — 9-кезеңде.
+  const today = viewer?.demo ? null : await getTodayPlan();
+  const plan = today ?? (viewer?.demo ? { ...s.plan, items: [] } : null);
+  const planPercent = plan && plan.total ? Math.round((plan.done / plan.total) * 100) : 0;
+  const nextItem = today?.items.find((i) => !i.done);
+  const continueHref = nextItem ? planItemHref(nextItem) : today ? "/plan" : "/lessons";
   const name = viewer?.name ?? s.name;
   const streak = viewer?.streak ?? 0;
   const xp = viewer?.xp ?? 0;
@@ -31,20 +39,29 @@ export default async function HomePage() {
       <FadeIn delay={0.05}>
         <GradientCard>
           <p className="text-sm font-semibold text-white/80">{t("todayPlan")}</p>
-          <p className="mt-1 text-2xl font-extrabold sm:text-3xl">
-            {t("todayPlanValue", { lessons: s.plan.lessons, questions: s.plan.questions })}
-          </p>
-          <Progress
-            value={planPercent}
-            aria-label={t("todayPlan")}
-            className="mt-4 [&_[data-slot=progress-indicator]]:bg-white [&_[data-slot=progress-track]]:h-2.5 [&_[data-slot=progress-track]]:bg-white/25"
-          />
-          <p className="mt-2 text-sm font-medium text-white/85">
-            {t("planProgress", { done: s.plan.done, total: s.plan.total })}
-          </p>
-          <ContinueButton href="/lessons" tone="white" className="mt-5">
+          {plan && plan.total > 0 ? (
+            <>
+              <p className="mt-1 text-2xl font-extrabold sm:text-3xl">
+                {t("todayPlanValue", { lessons: plan.lessons, questions: plan.questions })}
+              </p>
+              <Progress
+                value={planPercent}
+                aria-label={t("todayPlan")}
+                className="mt-4 [&_[data-slot=progress-indicator]]:bg-white [&_[data-slot=progress-track]]:h-2.5 [&_[data-slot=progress-track]]:bg-white/25"
+              />
+              <p className="mt-2 text-sm font-medium text-white/85">{t("planProgress", { done: plan.done, total: plan.total })}</p>
+            </>
+          ) : (
+            <p className="mt-1 text-lg font-bold">{tp(today ? "todayEmpty" : "emptyText")}</p>
+          )}
+          <ContinueButton href={continueHref} tone="white" className="mt-5">
             {tc("continue")}
           </ContinueButton>
+          {today && (
+            <Link href="/plan" className="mt-3 block text-center text-sm font-semibold text-white/90 underline-offset-4 hover:underline sm:inline-block sm:ml-4 sm:text-left">
+              {tp("title")} →
+            </Link>
+          )}
         </GradientCard>
       </FadeIn>
 
