@@ -5,6 +5,7 @@ import { StreakFreezeCard } from "@/components/gamification/streak-freeze-card";
 import { PlaceholderPage, placeholderMetadata } from "@/components/layout/placeholder-page";
 import { FadeIn } from "@/components/motion/fade-in";
 import { GoalForm, NotificationsForm, ProfileForm } from "@/components/profile/profile-editors";
+import { PushToggle } from "@/components/profile/push-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -181,6 +182,9 @@ export default async function ProfilePage() {
 
       {notifications && (
         <Section title={te("notifications")} description={te("notificationsHint")}>
+          <div className="mb-4">
+            <PushToggle publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
+          </div>
           <NotificationsForm
             initial={{
               push_streak: notifications.push_streak,

@@ -1,8 +1,11 @@
 import { isAuthorizedCron } from "@/lib/cron";
+import { runWeeklyJobs } from "@/lib/notify/jobs";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export const maxDuration = 300;
+
 /**
- * Апталық лига қорытындысы. Vercel Cron: дүйсенбі 00:00 Asia/Almaty (= жексенбі 19:00 UTC), vercel.json-да.
+ * Апталық лига қорытындысы + апта хабарламалары (push, email). Vercel Cron: дүйсенбі 00:00 Asia/Almaty (= жексенбі 19:00 UTC), vercel.json-да.
  * Өткен апталардың жабылмаған барлық топтарын жабады (cron бір рет өткізіп алса да, келесі жолы түзеледі).
  */
 export async function GET(request: Request) {
@@ -26,5 +29,8 @@ export async function GET(request: Request) {
     }
     closed += data ?? 0;
   }
-  return Response.json({ ok: true, weeks, closed });
+  // Жабылған апталар бойынша қорытынды хабарламалары (бұрын жіберілгендері қайталанбайды)
+  const sent: Record<string, Record<string, number>> = {};
+  for (const week of weeks) sent[week] = await runWeeklyJobs(week);
+  return Response.json({ ok: true, weeks, closed, sent });
 }

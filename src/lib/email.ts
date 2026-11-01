@@ -2,11 +2,11 @@ import "server-only";
 import { Resend } from "resend";
 
 /** Email жіберу (Resend). Кілт қойылмаса — жібермей, тек логқа жазады. Қате болса, негізгі әрекетті тоқтатпайды. */
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn(`[email] RESEND_API_KEY жоқ — email жіберілмеді: "${subject}" → ${to}`);
-    return;
+    console.warn(`[email] RESEND_API_KEY жоқ — email жіберілмеді: "${subject}"`);
+    return false;
   }
 
   try {
@@ -16,9 +16,14 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
       subject,
       html,
     });
-    if (error) console.error("[email] send failed", error);
+    if (error) {
+      console.error("[email] send failed", error);
+      return false;
+    }
+    return true;
   } catch (error) {
     console.error("[email] send failed", error);
+    return false;
   }
 }
 

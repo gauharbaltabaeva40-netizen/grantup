@@ -319,6 +319,7 @@ export type LeagueMember = {
   weekly_xp: number;
   final_rank: number | null;
   outcome: "promoted" | "demoted" | "stayed" | null;
+  notified_zone: "up" | "down" | "mid" | null;
   joined_at: string;
 };
 
@@ -352,6 +353,16 @@ export type PushSubscription = {
   user_agent: string | null;
   created_at: string;
   last_used_at: string | null;
+};
+
+export type NotificationLog = {
+  id: number;
+  user_id: string;
+  kind: string;
+  ref: string;
+  channel: "push" | "email";
+  delivered: number;
+  created_at: string;
 };
 
 export type AppSetting = { key: string; value: Json; description: string | null; updated_at: string; updated_by: string | null };
@@ -402,6 +413,7 @@ export type Database = {
       notifications_settings: Table<NotificationsSettings>;
       push_subscriptions: Table<PushSubscription>;
       app_settings: Table<AppSetting>;
+      notification_log: Table<NotificationLog>;
     };
     Views: Record<string, never>;
     Functions: {
