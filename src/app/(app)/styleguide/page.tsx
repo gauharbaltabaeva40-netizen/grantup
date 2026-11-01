@@ -18,6 +18,7 @@ import type { CatalogSubject } from "@/lib/content/catalog";
 import { BarList, TopicHeatmap } from "@/components/mock/charts";
 import { HistoryChart } from "@/components/mock/history-chart";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { Protected } from "@/components/protection/protection";
 import { MotionDemo } from "./motion-demo";
 import { QuizDemo } from "./quiz-demo";
 
@@ -231,6 +232,18 @@ export default function StyleguidePage() {
             ]}
           />
         </div>
+      </Section>
+
+      <Section title="Контентті қорғау">
+        <Protected>
+          <div className="rounded-2xl bg-card p-5 shadow-soft">
+            <p className="font-bold">Қорғалған мәтін (таңдау, көшіру, оң жақ мәзір өшірулі)</p>
+            <p className="mt-2 text-[15px] text-muted-foreground">
+              Ctrl/Cmd+P, Ctrl/Cmd+S, Cmd+Shift+4 немесе PrintScreen басып көріңіз — экран бұлыңғырланады. Басқа терезеге ауысқанда да мазмұн жасырылады.
+            </p>
+            <input className="mt-3 h-10 w-full rounded-lg border px-3" placeholder="Бұл өрісте мәтін енгізуге болады" />
+          </div>
+        </Protected>
       </Section>
 
       <Section title="Онбординг">

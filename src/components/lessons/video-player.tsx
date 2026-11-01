@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, VideoOff } from "lucide-react";
+import { Watermark } from "@/components/protection/protection";
 import { getLessonVideo, saveVideoProgress } from "@/lib/lessons/actions";
 import { cn } from "@/lib/utils";
 
@@ -263,6 +264,9 @@ export function VideoPlayer({ lessonId, startSeconds }: { lessonId: string; star
         <div className="pointer-events-none absolute inset-x-0 -top-[60px] -bottom-[60px]">
           <div ref={mountRef} className="size-full [&>*]:size-full" />
         </div>
+
+        {/* Су таңбасы — толық экранда да көрінеді */}
+        <Watermark />
 
         {/* Мөлдір қабат: iframe-ге тікелей басуға болмайды */}
         <button

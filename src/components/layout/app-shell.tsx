@@ -1,16 +1,21 @@
 import { getLocale } from "next-intl/server";
 import { Celebrations } from "@/components/gamification/celebrations";
+import { WatermarkProvider } from "@/components/protection/protection";
 import { getCelebrations } from "@/lib/gamification/data";
 import { isSupabaseConfigured } from "@/lib/env";
+import { getWatermarkText } from "@/lib/security/watermark";
 import { BottomNav } from "./bottom-nav";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
 
 /** Телефонда: жоғарғы жолақ + төменгі навигация. Компьютерде (lg+): сол жақ бүйір мәзір. */
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const celebrations = isSupabaseConfigured ? await getCelebrations(await getLocale()) : null;
+  const [celebrations, mark] = isSupabaseConfigured
+    ? await Promise.all([getCelebrations(await getLocale()), getWatermarkText()])
+    : [null, "demo@grantup.kz · demo"];
 
   return (
+    <WatermarkProvider mark={mark}>
     <div className="min-h-dvh">
       <Sidebar className="fixed inset-y-0 left-0 z-40 hidden w-64 lg:flex" />
       <div className="lg:pl-64">
@@ -22,5 +27,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <BottomNav className="lg:hidden" />
       {celebrations && <Celebrations data={celebrations} />}
     </div>
+    </WatermarkProvider>
   );
 }

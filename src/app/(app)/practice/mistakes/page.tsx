@@ -6,6 +6,7 @@ import { Markdown } from "@/components/content/markdown";
 import { PageHeader } from "@/components/layout/page-header";
 import { FadeIn } from "@/components/motion/fade-in";
 import { MistakesRunner } from "@/components/practice/mistakes-runner";
+import { Protected } from "@/components/protection/protection";
 import { Badge } from "@/components/ui/badge";
 import { getOpenMistakes } from "@/lib/practice/data";
 import { getSetting } from "@/lib/settings";
@@ -42,7 +43,7 @@ export default async function MistakesPage() {
       {mistakes.length === 0 ? (
         <EmptyState icon={PartyPopper} title={t("emptyTitle")} description={t("emptyText")} />
       ) : (
-        <>
+        <Protected className="space-y-5">
           <section className="rounded-2xl bg-card p-5 shadow-soft sm:p-6">
             <MistakesRunner subjects={subjects} total={mistakes.length} bonusXp={xp.mistakeFixed} />
           </section>
@@ -66,7 +67,7 @@ export default async function MistakesPage() {
               ))}
             </ul>
           </section>
-        </>
+        </Protected>
       )}
     </FadeIn>
   );

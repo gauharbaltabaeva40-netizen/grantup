@@ -214,6 +214,34 @@
   }
 }
 
+/* Контентті қорғау (components/protection) */
+@layer components {
+  .protected {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .protected input,
+  .protected textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .protected img {
+    -webkit-user-drag: none;
+  }
+  .protected[data-shield] .protected-content {
+    filter: blur(18px);
+  }
+}
+
+/* Басып шығарғанда — бос бет */
+@media print {
+  html,
+  body {
+    display: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

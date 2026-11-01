@@ -7,6 +7,7 @@ import { Markdown } from "@/components/content/markdown";
 import { CompleteLessonButton } from "@/components/lessons/complete-lesson-button";
 import { VideoPlayer } from "@/components/lessons/video-player";
 import { FadeIn } from "@/components/motion/fade-in";
+import { Protected } from "@/components/protection/protection";
 import { LessonQuiz } from "@/components/quiz/lesson-quiz";
 import { buttonVariants } from "@/components/ui/button";
 import { getLessonDetail } from "@/lib/content/catalog";
@@ -86,7 +87,7 @@ export default async function LessonPage({ params }: Params) {
           </Link>
         </GradientCard>
       ) : (
-        <>
+        <Protected className="space-y-5">
           <section aria-label={tl("video")}>
             {detail.hasVideo ? (
               <VideoPlayer lessonId={lesson.id} startSeconds={detail.videoCompleted ? 0 : detail.videoPositionSeconds} />
@@ -128,7 +129,7 @@ export default async function LessonPage({ params }: Params) {
               <ArrowRight aria-hidden />
             </Link>
           )}
-        </>
+        </Protected>
       )}
     </FadeIn>
   );

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { siteUrl } from "@/lib/env";
@@ -37,13 +38,13 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+  const [locale, nonce] = await Promise.all([getLocale(), headers().then((h) => h.get("x-nonce") ?? undefined)]);
 
   return (
     <html lang={locale} className={manrope.variable} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider>
-          <Providers>{children}</Providers>
+          <Providers nonce={nonce}>{children}</Providers>
         </NextIntlClientProvider>
       </body>
     </html>

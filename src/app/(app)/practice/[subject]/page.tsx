@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { SubjectIcon } from "@/components/lessons/subject-icon";
 import { FadeIn } from "@/components/motion/fade-in";
 import { PracticeSetup } from "@/components/practice/practice-setup";
+import { Protected } from "@/components/protection/protection";
 import { getPracticeCatalog } from "@/lib/practice/data";
 
 type Params = { params: Promise<{ subject: string }>; searchParams?: Promise<{ topic?: string }> };
@@ -38,6 +39,7 @@ export default async function PracticeSubjectPage({ params, searchParams }: Para
         </div>
       </div>
 
+      <Protected>
       <section className="rounded-2xl bg-card p-5 shadow-soft sm:p-6">
         {subject.availableQuestions > 0 ? (
           <PracticeSetup
@@ -49,6 +51,7 @@ export default async function PracticeSubjectPage({ params, searchParams }: Para
           <p className="text-muted-foreground">{t("noQuestions")}</p>
         )}
       </section>
+      </Protected>
     </FadeIn>
   );
 }

@@ -8,6 +8,7 @@ import {
   verifyDeviceToken,
 } from "@/lib/device/cookie";
 import { getAppSecret, isSupabaseConfigured, supabasePublicKey, supabaseUrl } from "@/lib/env";
+import { buildCsp, createNonce } from "@/lib/security/csp";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -15,13 +16,25 @@ import type { Database } from "@/lib/supabase/types";
  * 1. Supabase сессиясын жаңартады.
  * 2. Кірмеген пайдаланушыны /login-ге жібереді.
  * 3. Құрылғы cookie-ін тексереді: расталмаған құрылғы → /device (2 құрылғы шегі).
+ * 4. Nonce-пен CSP тақырыбын қояды (бөтен скрипттерді бұғаттау).
  * Нақты деректерді қорғау — RLS пен сервердегі тексерулерде; бұл — бірінші қабат.
  */
 export async function middleware(request: NextRequest) {
-  // Демо режим: Supabase кілттері жоқ — тексерусіз өткіземіз (тек әзірлеу үшін).
-  if (!isSupabaseConfigured) return NextResponse.next();
+  const nonce = createNonce();
+  const csp = buildCsp(nonce);
+  // Next.js сұраныс тақырыбындағы CSP-ден nonce-ты оқып, өз скрипттеріне қосады
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("content-security-policy", csp);
+  const passThrough = () => {
+    const res = NextResponse.next({ request: { headers: request.headers } });
+    res.headers.set("content-security-policy", csp);
+    return res;
+  };
 
-  let response = NextResponse.next({ request });
+  // Демо режим: Supabase кілттері жоқ — тексерусіз өткіземіз (тек әзірлеу үшін).
+  if (!isSupabaseConfigured) return passThrough();
+
+  let response = passThrough();
 
   const supabase = createServerClient<Database>(supabaseUrl, supabasePublicKey, {
     cookies: {
@@ -30,7 +43,7 @@ export async function middleware(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
-        response = NextResponse.next({ request });
+        response = passThrough();
         for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
       },
     },

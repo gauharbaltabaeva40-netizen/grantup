@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { Protected } from "@/components/protection/protection";
 import { getCurrentProfile } from "@/lib/auth/session";
 import { localized } from "@/lib/content/localize";
 import { getSetting } from "@/lib/settings";
@@ -23,6 +24,7 @@ export default async function OnboardingPage() {
     .order("threshold_score", { ascending: false });
 
   return (
+    <Protected>
     <OnboardingFlow
       initialTarget={profile.target_score}
       diagnosticMinutes={diagnostic.durationMinutes}
@@ -34,5 +36,6 @@ export default async function OnboardingPage() {
         threshold: s.threshold_score,
       }))}
     />
+    </Protected>
   );
 }

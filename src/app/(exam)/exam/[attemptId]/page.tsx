@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { MockExam } from "@/components/mock/mock-exam";
+import { Protected } from "@/components/protection/protection";
 import { getMockState } from "@/lib/mock/data";
 
 type Params = { params: Promise<{ attemptId: string }> };
@@ -19,5 +20,9 @@ export default async function ExamPage({ params }: Params) {
   if (state === "finished") redirect(`/mock-exam/${attemptId}/result`);
   if (!state) notFound();
 
-  return <MockExam state={state} />;
+  return (
+    <Protected>
+      <MockExam state={state} />
+    </Protected>
+  );
 }
