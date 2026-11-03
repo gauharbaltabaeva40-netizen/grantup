@@ -6,7 +6,7 @@ import { AuthError, requireUser } from "@/lib/auth/session";
 import { asLocale } from "@/lib/content/localize";
 import { awardXp } from "@/lib/gamification/xp";
 import { generateStudyPlan } from "@/lib/plan/server";
-import { shuffle } from "@/lib/quiz/grading";
+import { isEngaged, shuffle } from "@/lib/quiz/grading";
 import { buildOptionOrder, cryptoRandom, finalizeAttempt, loadOwnedAttempt } from "@/lib/quiz/server";
 import type { ActionResult, QuizErrorKey, QuizResult } from "@/lib/quiz/types";
 import { rateLimit } from "@/lib/rate-limit";
@@ -126,9 +126,10 @@ export async function finishDiagnostic(attemptId: string): Promise<ActionResult<
     const attempt = await loadOwnedAttempt(attemptId, user.id, ["diagnostic"]);
     if (!attempt) return err("not_found");
 
-    const [{ correct, total, percent }, xp] = await Promise.all([finalizeAttempt(attempt), getSetting("xp")]);
+    const [{ correct, total, percent, answered }, xp] = await Promise.all([finalizeAttempt(attempt), getSetting("xp")]);
     await completeOnboarding(user.id);
-    const award = await awardXp(user.id, xp.diagnosticFinished, "diagnostic_finished", attempt.id);
+    // XP тек сұрақтардың кемінде жартысына жауап берілсе
+    const award = isEngaged(answered, total) ? await awardXp(user.id, xp.diagnosticFinished, "diagnostic_finished", attempt.id) : null;
     await generateStudyPlan(user.id, "diagnostic", attempt.id);
 
     return {

@@ -32,12 +32,6 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
       <Field label={t("password")} htmlFor="password">
         <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </Field>
-      <div className="flex justify-end">
-        <Link href="/forgot-password" className="text-sm font-semibold text-primary hover:underline">
-          {t("forgot")}
-        </Link>
-      </div>
-
       <SubmitButton>{t("submitLogin")}</SubmitButton>
 
       <p className="pt-2 text-center text-sm text-muted-foreground">

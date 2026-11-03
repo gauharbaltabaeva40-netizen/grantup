@@ -58,3 +58,11 @@ export function shuffle<T>(items: readonly T[], random: () => number = Math.rand
   }
   return result;
 }
+
+/**
+ * Сынақ/диагностика «шынымен тапсырылды ма»: сұрақтардың кемінде жартысына жауап берілсе ғана XP мен
+ * жетістік беріледі (бос аяқтап, марапат жинауға болмайды). Дерекқордағы attempt_is_engaged() — дәл осы ереже.
+ */
+export function isEngaged(answered: number, total: number): boolean {
+  return total > 0 && answered * 2 >= total;
+}

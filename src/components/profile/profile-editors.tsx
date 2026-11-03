@@ -207,7 +207,7 @@ export function NotificationsForm({ initial }: { initial: Record<NotificationKey
               values[key] ? "bg-primary" : "bg-muted-foreground/30",
             )}
           >
-            <span className={cn("absolute top-0.5 size-6 rounded-full bg-white shadow transition-transform", values[key] ? "translate-x-5.5" : "translate-x-0.5")} />
+            <span className={cn("absolute top-0.5 left-0 size-6 rounded-full bg-white shadow transition-transform", values[key] ? "translate-x-5.5" : "translate-x-0.5")} />
           </button>
         </li>
       ))}

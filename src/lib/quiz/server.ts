@@ -212,6 +212,7 @@ export async function finalizeAttempt(attempt: Attempt) {
     .eq("attempt_id", attempt.id);
 
   const correct = (answers ?? []).filter((a) => a.is_correct).length;
+  const answered = (answers ?? []).filter((a) => a.is_correct !== null).length;
   const total = attempt.question_ids.length;
   const score = (answers ?? []).reduce((sum, a) => sum + Number(a.points ?? 0), 0);
   const percent = total ? Math.round((correct / total) * 100) : 0;
@@ -224,5 +225,5 @@ export async function finalizeAttempt(attempt: Attempt) {
       .eq("status", "in_progress");
   }
 
-  return { correct, total, percent, score };
+  return { correct, total, percent, score, answered };
 }

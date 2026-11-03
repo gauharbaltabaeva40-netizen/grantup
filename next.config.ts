@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Админ сұрақ суретін (≤ 2 МБ) және импорт жолдарын Server Action арқылы жібереді
   experimental: { serverActions: { bodySizeLimit: "3mb" } },
+  // Метадеректерді (title, description) әрдайым <head>-ке жазу: generateMetadata жылдам (тек аударма),
+  // ал ағынмен (streaming) берілсе, кейбір сканерлер мен превью жасаушылар сипаттаманы көрмейді.
+  htmlLimitedBots: /.*/,
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

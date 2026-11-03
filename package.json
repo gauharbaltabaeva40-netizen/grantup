@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "npm run test:unit && npm run test:db",
+    "test:unit": "node --import ./tests/register.mjs --test \"tests/unit/*.test.ts\"",
+    "test:db": "node tests/sql/database.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
@@ -38,6 +41,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.3.16",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",

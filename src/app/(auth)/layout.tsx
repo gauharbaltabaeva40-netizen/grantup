@@ -19,7 +19,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8">
         {!isSupabaseConfigured && (
-          <p className="mb-4 rounded-xl bg-streak/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
+          <p className="mb-4 rounded-xl bg-streak/12 px-4 py-3 text-sm font-medium text-amber-800 dark:text-amber-300">
             {t("demoNotice")}
           </p>
         )}

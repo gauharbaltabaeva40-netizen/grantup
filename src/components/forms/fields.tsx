@@ -76,7 +76,7 @@ export function ChoiceGroup({
               required
               className="peer sr-only"
             />
-            <span className="flex h-12 cursor-pointer items-center justify-center rounded-xl border border-input bg-card px-2 text-center text-sm font-semibold transition-colors peer-checked:border-primary peer-checked:bg-secondary peer-checked:text-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:bg-muted">
+            <span className="flex h-12 cursor-pointer items-center justify-center rounded-xl border border-input bg-card px-2 text-center text-sm font-semibold transition-colors peer-checked:border-primary peer-checked:bg-secondary peer-checked:text-primary dark:peer-checked:text-[#7b9bff] peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:bg-muted">
               {o.label}
             </span>
           </label>

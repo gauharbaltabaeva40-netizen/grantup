@@ -254,3 +254,24 @@
     @apply bg-background text-foreground antialiased;
   }
 }
+
+/*
+ * Қараңғы тақырыпта бренд-көк МӘТІН (сілтемелер, белгілер) қою фонда оқылуы үшін ашығырақ (контраст ≥ 4.5:1, WCAG AA).
+ * Батырма фоны (--primary) өзгермейді — ақ мәтін онда да оқылады. Ақ фондағы элементтер (`bg-white`) өзгермейді.
+ */
+.dark .text-primary:not(.bg-white),
+.dark .text-brand:not(.bg-white),
+.dark .hover\:text-primary:hover {
+  color: #7b9bff;
+}
+
+/* Ақ тақырыпта ашық түсті (сары/жасыл/қызыл) МӘТІН ақ фонда оқылуы үшін қоюырақ реңкте (WCAG AA). */
+:root:not(.dark) .text-streak {
+  color: #b45309;
+}
+:root:not(.dark) .text-success {
+  color: #15803d;
+}
+:root:not(.dark) .text-danger {
+  color: #dc2626;
+}

@@ -1,6 +1,6 @@
 import "server-only";
 import { almatyToday, awardXp } from "@/lib/gamification/xp";
-import { gradeAnswer, shuffle } from "@/lib/quiz/grading";
+import { gradeAnswer, isEngaged, shuffle } from "@/lib/quiz/grading";
 import { buildOptionOrder, cryptoRandom, updateMistake } from "@/lib/quiz/server";
 import { getSetting, type UntStructure } from "@/lib/settings";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -146,8 +146,11 @@ export async function finalizeMock(attempt: Attempt, status: "finished" | "expir
     .eq("status", "in_progress");
   if (error) throw error;
 
-  const xp = await getSetting("xp");
-  await awardXp(attempt.user_id, xp.mockFinished, "mock_finished", attempt.id);
+  // XP тек сұрақтардың кемінде жартысына жауап берілсе (бос аяқталған сынаққа марапат жоқ)
+  if (isEngaged(rows.filter((r) => r.answered_at).length, rows.length)) {
+    const xp = await getSetting("xp");
+    await awardXp(attempt.user_id, xp.mockFinished, "mock_finished", attempt.id);
+  }
   return { score, maxScore, today: almatyToday() };
 }
 
