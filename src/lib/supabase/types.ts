@@ -371,6 +371,7 @@ export type ProctoringEventType =
   | "no_face"
   | "multiple_faces"
   | "camera_off"
+  | "camera_on"
   | "tab_hidden"
   | "detector_unavailable";
 
@@ -381,6 +382,7 @@ export type ProctoringEvent = {
   type: ProctoringEventType;
   detail: Record<string, unknown>;
   image_path: string | null;
+  question_no: number | null;
   created_at: string;
 };
 

@@ -1,7 +1,7 @@
 # GrantUp.kz — ҰБТ-ға дайындық платформасы
 
 Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI) · Supabase (Postgres, Auth, Storage) ·
-Claude API (AI-тьютор) · next-intl (қаз/орыс) · PWA + Web Push · Vercel.
+Claude API (міндетті емес: тек апталық жоспар) · next-intl (қаз/орыс) · PWA + Web Push · Vercel.
 
 **Қазір жұмыс істеп тұр:** https://grantup-alpha.vercel.app (Vercel, `fra1`) + Supabase `grantup-db` (Frankfurt, Free).
 
@@ -62,7 +62,7 @@ npm run dev            # http://localhost:3000
 | `NEXT_PUBLIC_SUPABASE_URL` | иә | Supabase | Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (немесе `…_ANON_KEY`) | иә | браузер/сервер, RLS-пен | Project Settings → API Keys |
 | `SUPABASE_SECRET_KEY` (немесе `SUPABASE_SERVICE_ROLE_KEY`) | иә | тек сервер, RLS-ті айналып өтеді | Project Settings → API Keys |
-| `ANTHROPIC_API_KEY` | AI үшін | түсіндіру, жеке жоспар | console.anthropic.com → API Keys. Жоқ болса — AI батырмалары қатесіз өшеді, жоспар ережелермен құрылады |
+| `ANTHROPIC_API_KEY` | жоқ | AI апталық жоспар | console.anthropic.com → API Keys. Жоқ болса — жоспар ережелермен құрылады (сайт толық жұмыс істейді). Қате түсіндірмесі AI емес — сұрақтың дайын `explanation` мәтіні |
 | `RESEND_API_KEY`, `EMAIL_FROM` | email үшін | апталық есеп, доступ мерзімі, админге хабарлама | resend.com (расталған домен керек) |
 | `ADMIN_NOTIFY_EMAIL` | жоқ | 3-ші құрылғы сұранысы туралы хат | админ email-і |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | push үшін | Web Push | `npx web-push generate-vapid-keys` |
@@ -131,10 +131,10 @@ SMTP қосылған соң:
 2. Sign In / Providers → **Confirm email** қайта қосыңыз.
 3. Тексеру: жаңа email-мен тіркеліп, хаттағы сілтемені телефоннан ашыңыз.
 
-### 4.5 AI-тьютор және push
+### 4.5 AI жоспар (міндетті емес) және push
 
-- `ANTHROPIC_API_KEY` қойып, Redeploy. Модель мен күндік лимиттер — Админ → Баптаулар → `ai_limits`.
-  Түсіндірмелер кэштеледі (бір сұрақ+жауап+тіл үшін бір рет төленеді).
+- AI-тьютор алынды: қате жауапта сұрақтың алдын ала жазылған қысқа түсіндірмесі (`questions.explanation`) шығады.
+- `ANTHROPIC_API_KEY` тек апталық жоспарды AI-мен құру үшін (қойылмаса — ережелермен). Лимит — Админ → Баптаулар → `ai_limits`.
 - Push VAPID кілттерімен бірден жұмыс істейді; iPhone-да тек сайт «Басты экранға қосылғанда» (PWA) жұмыс істейді.
 
 ## 5. Деплойдан кейінгі тексеру тізімі
@@ -249,7 +249,7 @@ src/app/(auth)/               кіру, тіркелу, құрылғы
 src/app/(exam)/               сынақ ҰБТ тапсыру беті (толық экран)
 src/app/(onboarding)/         онбординг + диагностика
 src/app/admin/                админ-панель
-src/app/api/                  AI түсіндіру (стрим), cron
+src/app/api/                  cron
 src/components/               UI (brand, layout, quiz, mock, admin, protection …)
 src/lib/                      сервер логикасы (auth, device, quiz, mock, ai, plan, gamification, notify, admin …)
 src/middleware.ts             сессия, кіру, құрылғы, CSP

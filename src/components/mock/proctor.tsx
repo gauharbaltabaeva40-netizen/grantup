@@ -5,6 +5,7 @@
  * - Бет анықтау браузердің өзінде (MediaPipe, WASM) — видео серверге ағынмен жіберілмейді.
  * - Серверге тек: келісім фотосы, 3 минут сайынғы фото, бұзушылық сәтіндегі фото және оқиғалар журналы.
  * - Бұзушылық (бет жоқ, бірнеше адам, камера өшті, басқа бетке ауысу) тек тіркеледі — сынақ тоқтатылмайды.
+ * - Әр оқиғамен бірге сол сәттегі сұрақ нөмірі жазылады.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -263,9 +264,12 @@ export function CameraCheck({ onReady, onCancel, pending }: { onReady: () => voi
 // Сынақ кезінде
 // ---------------------------------------------------------------------
 
-export function ExamProctor({ attemptId }: { attemptId: string }) {
+export function ExamProctor({ attemptId, questionNo }: { attemptId: string; questionNo: number }) {
   const t = useTranslations("mockExam.proctor");
   const { videoRef, status, error, face, start } = useCameraWatch(true);
+  const questionRef = useRef(questionNo);
+  questionRef.current = questionNo;
+  const offSince = useRef<number | null>(null);
   const lastLogged = useRef<Partial<Record<ProctoringEventType, number>>>({});
   const detectorLogged = useRef(false);
   const faceSince = useRef<{ state: FaceState; since: number }>({ state: "loading", since: Date.now() });
@@ -278,23 +282,31 @@ export function ExamProctor({ attemptId }: { attemptId: string }) {
     return true;
   }, []);
 
+  const log = useCallback(
+    (type: ProctoringEventType, detail: Record<string, string | number | boolean> = {}) =>
+      logProctoringEvent(attemptId, type, detail, questionRef.current),
+    [attemptId],
+  );
+
   const snapshot = useCallback(
     async (reason: "consent" | "snapshot" | "no_face" | "multiple_faces") => {
+      const question = questionRef.current;
       const video = videoRef.current;
       const blob = video ? await captureJpeg(video) : null;
       if (!blob) {
-        if (reason !== "snapshot" && reason !== "consent") await logProctoringEvent(attemptId, reason);
+        if (reason !== "snapshot" && reason !== "consent") await log(reason);
         return;
       }
       const form = new FormData();
       form.append("attemptId", attemptId);
       form.append("reason", reason);
+      form.append("question", String(question));
       form.append("file", blob, "snapshot.jpg");
       const result = await uploadProctoringSnapshot(form);
       // Фото сақталмаса да, бұзушылық журналда қалсын
-      if (!result.ok && reason !== "snapshot" && reason !== "consent") await logProctoringEvent(attemptId, reason);
+      if (!result.ok && reason !== "snapshot" && reason !== "consent") await log(reason);
     },
-    [attemptId, videoRef],
+    [attemptId, log, videoRef],
   );
 
   // Камераны бірден қосу (рұқсат сынақ алдында берілген)
@@ -314,18 +326,26 @@ export function ExamProctor({ attemptId }: { attemptId: string }) {
     if (!done) setTimeout(() => void snapshot("consent"), 1500);
   }, [status, attemptId, snapshot]);
 
-  // Камера өшсе
+  // Камера өшсе / қайта қосылса (қай сұрақта және қанша уақыт өшік тұрғаны)
   useEffect(() => {
-    if (status === "off" && cooledDown("camera_off")) void logProctoringEvent(attemptId, "camera_off", { reason: error ?? "ended" });
-  }, [status, error, attemptId, cooledDown]);
+    if (status === "off") {
+      offSince.current ??= Date.now();
+      if (cooledDown("camera_off")) void log("camera_off", { reason: error ?? "ended" });
+    }
+    if (status === "on" && offSince.current !== null) {
+      const seconds = Math.round((Date.now() - offSince.current) / 1000);
+      offSince.current = null;
+      void log("camera_on", { offSeconds: seconds });
+    }
+  }, [status, error, cooledDown, log]);
 
   // Бет анықтау қолжетімсіз
   useEffect(() => {
     if (face === "unavailable" && !detectorLogged.current) {
       detectorLogged.current = true;
-      void logProctoringEvent(attemptId, "detector_unavailable");
+      void log("detector_unavailable");
     }
-  }, [face, attemptId]);
+  }, [face, log]);
 
   // Бет жоқ / бірнеше бет — белгілі уақыт сақталса тіркеледі
   useEffect(() => {
@@ -349,11 +369,11 @@ export function ExamProctor({ attemptId }: { attemptId: string }) {
   // Басқа бетке/қолданбаға ауысу
   useEffect(() => {
     const onVisibility = () => {
-      if (document.hidden && cooledDown("tab_hidden", 10_000)) void logProctoringEvent(attemptId, "tab_hidden");
+      if (document.hidden && cooledDown("tab_hidden", 10_000)) void log("tab_hidden");
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [attemptId, cooledDown]);
+  }, [cooledDown, log]);
 
   const warn = status !== "on" || face === "none" || face === "many";
 

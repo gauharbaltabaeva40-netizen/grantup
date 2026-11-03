@@ -33,7 +33,7 @@ export default async function LessonsPage() {
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-soft outline-none transition-shadow hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-4"
+            className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-soft hover-lift outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-4"
           >
             <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${tone}`}>
               <Icon className="size-5" aria-hidden />
@@ -57,7 +57,7 @@ export default async function LessonsPage() {
               <li key={subject.code}>
                 <Link
                   href={`/lessons/${subject.code}`}
-                  className="group flex h-full flex-col gap-4 rounded-2xl bg-card p-5 shadow-soft transition-shadow outline-none hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="group flex h-full flex-col gap-4 rounded-2xl bg-card p-5 shadow-soft hover-lift outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <div className="flex items-start gap-4">
                     <SubjectIcon icon={subject.icon} color={subject.color} />

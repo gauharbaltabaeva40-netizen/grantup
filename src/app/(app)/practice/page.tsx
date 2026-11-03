@@ -27,7 +27,7 @@ export default async function PracticePage() {
 
       <Link
         href="/practice/mistakes"
-        className="flex items-center gap-4 rounded-2xl bg-card p-5 shadow-soft outline-none transition-shadow hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="flex items-center gap-4 rounded-2xl bg-card p-5 shadow-soft hover-lift outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-danger/10 text-danger">
           <RotateCcw className="size-6" aria-hidden />
@@ -49,7 +49,7 @@ export default async function PracticePage() {
             <li key={subject.code}>
               <Link
                 href={`/practice/${subject.code}`}
-                className="flex h-full items-center gap-4 rounded-2xl bg-card p-5 shadow-soft outline-none transition-shadow hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="flex h-full items-center gap-4 rounded-2xl bg-card p-5 shadow-soft hover-lift outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <SubjectIcon icon={subject.icon} color={subject.color} />
                 <div className="min-w-0 flex-1">

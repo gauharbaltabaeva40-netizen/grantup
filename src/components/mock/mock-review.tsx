@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import { Markdown } from "@/components/content/markdown";
 import { FormMessage } from "@/components/forms/fields";
-import { AiExplain } from "@/components/quiz/ai-explain";
+import { Explanation } from "@/components/quiz/explanation";
 import { QuestionCard } from "@/components/quiz/question-card";
 import { Button } from "@/components/ui/button";
 import { getMockReviewQuestion } from "@/lib/mock/actions";
@@ -23,7 +22,6 @@ const statusStyle = {
 /** Аяқталған сынақты шолу: әр сұрақ — оқушы жауабы, дұрыс жауап және түсіндірме. */
 export function MockReview({ state }: { state: MockReviewState }) {
   const t = useTranslations("mockExam");
-  const tq = useTranslations("quiz");
   const [index, setIndex] = useState(() => Math.max(0, state.questionIds.findIndex((id) => state.statuses[id] !== "correct")));
   const [cache, setCache] = useState<Record<number, QuizQuestion>>({});
   const [error, setError] = useState<MockErrorKey | null>(null);
@@ -63,16 +61,8 @@ export function MockReview({ state }: { state: MockReviewState }) {
           {question ? (
             <>
               <QuestionCard question={question} selected={[]} onToggle={() => {}} />
-              {question.feedback?.explanation && (
-                <div className="mt-5 rounded-2xl bg-secondary p-4">
-                  <p className="mb-1 text-sm font-bold">{tq("explanation")}</p>
-                  <Markdown className="text-[15px]">{question.feedback.explanation}</Markdown>
-                </div>
-              )}
-              {status !== "correct" && (
-                <div className="mt-4">
-                  <AiExplain key={question.questionId} attemptId={state.attemptId} questionId={question.questionId} />
-                </div>
+              {(status !== "correct" || question.feedback?.explanation) && (
+                <Explanation key={question.questionId} text={question.feedback?.explanation} className="mt-5" />
               )}
             </>
           ) : (

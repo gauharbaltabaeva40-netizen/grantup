@@ -591,6 +591,15 @@ await check("proctoring: events hidden from API, admin summary counts", async ()
   const [r] = await q(`select no_face::int, multiple_faces::int, tab_hidden::int, snapshots::int from admin_proctoring_attempts(10, 0, $1)`, [u.id]);
   assert(r.no_face === 2 && r.multiple_faces === 1 && r.tab_hidden === 1 && r.snapshots === 2, JSON.stringify(r));
   await expectFail(as("authenticated", u.id, `select * from admin_proctoring_attempts()`));
+  // Қай сұрақта болғаны және «камера қайта қосылды»
+  await q(`insert into proctoring_events (attempt_id, user_id, type, question_no, detail) values ($1, $2, 'camera_on', 37, '{"offSeconds": 42}')`, [a.id, u.id]);
+  await expectFail(q(`insert into proctoring_events (attempt_id, user_id, type, question_no) values ($1, $2, 'camera_off', 0)`, [a.id, u.id]));
+  const [on] = await q(`select question_no from proctoring_events where attempt_id = $1 and type = 'camera_on'`, [a.id]);
+  assert(on.question_no === 37, JSON.stringify(on));
+});
+await check("unt_structure: history = 10 single + 2 contexts (2026 spec)", async () => {
+  const [r] = await q(`select value #> '{sections,0,composition}' c from app_settings where key = 'unt_structure'`);
+  assert(r.c.single === 10 && r.c.context === 10, JSON.stringify(r));
 });
 await check("admin_students: search + access filter + paging", async () => {
   const all = await q(`select id, has_access from admin_students('TEST.kz', null, 50, 0)`);

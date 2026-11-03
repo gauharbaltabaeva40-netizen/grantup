@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Markdown } from "@/components/content/markdown";
 import { FormMessage } from "@/components/forms/fields";
 import { XpBurst } from "@/components/motion/xp-burst";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { getQuizQuestion, submitQuizAnswer } from "@/lib/quiz/actions";
 import type { ActionResult, QuizErrorKey, QuizQuestion, QuizResult } from "@/lib/quiz/types";
 import { cn } from "@/lib/utils";
-import { AiExplain } from "./ai-explain";
+import { Explanation } from "./explanation";
 import { QuestionCard } from "./question-card";
 
 export type QuizRunnerProps = {
@@ -172,13 +171,7 @@ export function QuizRunner({ start, finish, intro, startLabel, renderResult, ins
             {feedback.isCorrect ? t("correct") : feedback.points > 0 ? t("partial") : t("wrong")}
             {feedback.points > 0 && <span className="text-sm font-bold opacity-80">{t("points", { points: feedback.points })}</span>}
           </p>
-          {feedback.explanation && (
-            <div>
-              <p className="mb-1 text-sm font-bold">{t("explanation")}</p>
-              <Markdown className="text-[15px]">{feedback.explanation}</Markdown>
-            </div>
-          )}
-          {!feedback.isCorrect && <AiExplain key={question.questionId} attemptId={question.attemptId} questionId={question.questionId} />}
+          {(!feedback.isCorrect || feedback.explanation) && <Explanation key={question.questionId} text={feedback.explanation} />}
         </div>
       )}
 

@@ -11,7 +11,7 @@ import type { ProctoringEventType } from "@/lib/supabase/types";
 import { SNAPSHOT_MAX_BYTES } from "./constants";
 
 const BUCKET = "proctoring";
-const EVENT_TYPES = ["consent", "snapshot", "no_face", "multiple_faces", "camera_off", "tab_hidden", "detector_unavailable"] as const;
+const EVENT_TYPES = ["consent", "snapshot", "no_face", "multiple_faces", "camera_off", "camera_on", "tab_hidden", "detector_unavailable"] as const;
 const IMAGE_TYPES = ["consent", "snapshot", "no_face", "multiple_faces"] as const;
 
 /** Пайдаланушының жүріп жатқан сынақ ҰБТ-сы ма */
@@ -27,10 +27,17 @@ async function isOwnActiveMock(attemptId: string, userId: string) {
   return Boolean(data);
 }
 
+/** Сынақтағы сұрақ нөмірі (1-ден); жарамсыз болса — null */
+function questionNo(value: unknown) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= 500 ? n : null;
+}
+
 export async function logProctoringEvent(
   attemptId: string,
   type: ProctoringEventType,
   detail: Record<string, string | number | boolean> = {},
+  question?: number,
 ): Promise<{ ok: boolean }> {
   try {
     const user = await requireUser();
@@ -47,7 +54,13 @@ export async function logProctoringEvent(
 
     const { error } = await createAdminClient()
       .from("proctoring_events")
-      .insert({ attempt_id: attemptId, user_id: user.id, type: parsed.data.type, detail: parsed.data.detail });
+      .insert({
+        attempt_id: attemptId,
+        user_id: user.id,
+        type: parsed.data.type,
+        detail: parsed.data.detail,
+        question_no: questionNo(question),
+      });
     if (error) throw error;
     return { ok: true };
   } catch (error) {
@@ -80,7 +93,13 @@ export async function uploadProctoringSnapshot(formData: FormData): Promise<{ ok
 
     const { error } = await admin
       .from("proctoring_events")
-      .insert({ attempt_id: attemptId, user_id: user.id, type: reason as ProctoringEventType, image_path: path });
+      .insert({
+        attempt_id: attemptId,
+        user_id: user.id,
+        type: reason as ProctoringEventType,
+        image_path: path,
+        question_no: questionNo(formData.get("question")),
+      });
     if (error) throw error;
     return { ok: true };
   } catch (error) {

@@ -252,6 +252,68 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    /* Жұмсақ градиент фон: көк (жоғары сол) → күлгін (жоғары оң) → көк (төмен). Қозғалмайды — назар бөлмейді. */
+    background-image:
+      radial-gradient(70rem 36rem at -10% -15%, rgb(10 132 255 / 0.11), transparent 60%),
+      radial-gradient(55rem 32rem at 110% -5%, rgb(123 63 242 / 0.1), transparent 58%),
+      radial-gradient(60rem 40rem at 50% 115%, rgb(0 71 255 / 0.07), transparent 62%);
+    background-attachment: fixed;
+  }
+  .dark body {
+    background-image:
+      radial-gradient(70rem 36rem at -10% -15%, rgb(10 132 255 / 0.16), transparent 60%),
+      radial-gradient(55rem 32rem at 110% -5%, rgb(148 102 255 / 0.15), transparent 58%),
+      radial-gradient(60rem 40rem at 50% 115%, rgb(59 107 255 / 0.1), transparent 62%);
+  }
+}
+
+/* Градиенттің өте баяу «жүзуі» (14 с) — тек сәндік блоктарда (батырмаларда емес) */
+@utility animate-gradient-drift {
+  background-size: 180% 180%;
+  animation: gradient-drift 14s ease-in-out infinite alternate;
+}
+/* Сәндік дөңгелектің жай тербелуі */
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-12px, 10px);
+  }
+}
+@keyframes gradient-drift {
+  from {
+    background-position: 0% 30%;
+  }
+  to {
+    background-position: 100% 70%;
+  }
+}
+
+/* Карталарды басуға болатынын білдіретін жеңіл көтерілу */
+@utility hover-lift {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgb(11 21 51 / 0.05), 0 16px 32px -12px rgb(0 71 255 / 0.22);
+  }
+}
+
+/* Сынақ ҰБТ экранының фоны: бірқалыпты, жұмсақ (сұраққа назар) */
+.exam-backdrop {
+  background-image: linear-gradient(180deg, rgb(0 71 255 / 0.05), transparent 22rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

@@ -16,6 +16,7 @@ const EVENT: Record<ProctoringEventType, { label: string; tone: "destructive" | 
   no_face: { label: "Бет көрінбейді", tone: "destructive" },
   multiple_faces: { label: "Бірнеше адам", tone: "destructive" },
   camera_off: { label: "Камера өшті", tone: "secondary" },
+  camera_on: { label: "Камера қайта қосылды", tone: "outline" },
   tab_hidden: { label: "Басқа бетке ауысты", tone: "secondary" },
   detector_unavailable: { label: "Бет анықтау қолжетімсіз (тек фото)", tone: "outline" },
 };
@@ -27,16 +28,36 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
 
   const { data: attempt } = await db
     .from("attempts")
-    .select("id, user_id, kind, status, score, max_score, started_at, finished_at")
+    .select("id, user_id, kind, status, score, max_score, started_at, finished_at, structure")
     .eq("id", attemptId)
     .eq("kind", "mock")
     .maybeSingle();
   if (!attempt) notFound();
 
-  const [{ data: profile }, { data: events }] = await Promise.all([
+  const [{ data: profile }, { data: events }, { data: subjects }] = await Promise.all([
     db.from("profiles").select("full_name, email").eq("id", attempt.user_id).maybeSingle(),
-    db.from("proctoring_events").select("id, type, detail, image_path, created_at").eq("attempt_id", attemptId).order("created_at").limit(1000),
+    db
+      .from("proctoring_events")
+      .select("id, type, detail, image_path, question_no, created_at")
+      .eq("attempt_id", attemptId)
+      .order("created_at")
+      .limit(1000),
+    db.from("subjects").select("code, title_kk"),
   ]);
+  const layout = (attempt.structure as { layout?: { subject: string; start: number; count: number }[] } | null)?.layout ?? [];
+  const subjectTitle = new Map((subjects ?? []).map((s) => [s.code, s.title_kk]));
+  /** «Математика · 3-сұрақ» (пән ішіндегі нөмір, сынақта оқушы көретіндей) */
+  const whereIn = (questionNo: number | null) => {
+    if (!questionNo) return null;
+    const section = layout.find((l) => questionNo - 1 >= l.start && questionNo - 1 < l.start + l.count);
+    if (!section) return `${questionNo}-сұрақ`;
+    return `${subjectTitle.get(section.subject) ?? section.subject} · ${questionNo - section.start}-сұрақ`;
+  };
+  const offFor = (detail: unknown) => {
+    const seconds = Number((detail as { offSeconds?: number } | null)?.offSeconds);
+    if (!Number.isFinite(seconds) || seconds <= 0) return null;
+    return seconds < 60 ? `${seconds} сек өшік тұрды` : `${Math.round(seconds / 60)} мин өшік тұрды`;
+  };
   const list = events ?? [];
   const images = await signedProctoringImages(list.map((e) => e.image_path).filter((p): p is string => Boolean(p)));
   const count = (type: ProctoringEventType) => list.filter((e) => e.type === type).length;
@@ -75,9 +96,12 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
                 <figure key={e.id} className="overflow-hidden rounded-xl border">
                   {/* eslint-disable-next-line @next/next/no-img-element -- қысқа мерзімді signed URL */}
                   <img src={images.get(e.image_path!)} alt={EVENT[e.type].label} className="aspect-[4/3] w-full bg-black object-cover" loading="lazy" />
-                  <figcaption className="flex items-center justify-between gap-2 px-2 py-1.5 text-xs">
-                    <Badge variant={EVENT[e.type].tone}>{EVENT[e.type].label}</Badge>
-                    <span className="tabular-nums text-muted-foreground">{formatDateTime(e.created_at).split(", ")[1]}</span>
+                  <figcaption className="space-y-1 px-2 py-1.5 text-xs">
+                    <span className="flex items-center justify-between gap-2">
+                      <Badge variant={EVENT[e.type].tone}>{EVENT[e.type].label}</Badge>
+                      <span className="tabular-nums text-muted-foreground">{formatDateTime(e.created_at).split(", ")[1]}</span>
+                    </span>
+                    {whereIn(e.question_no) && <span className="block font-semibold text-muted-foreground">{whereIn(e.question_no)}</span>}
                   </figcaption>
                 </figure>
               ))}
@@ -88,9 +112,11 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
       <Panel title="Оқиғалар журналы">
         <ol className="divide-y text-sm">
           {list.map((e) => (
-            <li key={e.id} className="flex items-center justify-between gap-3 py-2">
+            <li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
               <Badge variant={EVENT[e.type].tone}>{EVENT[e.type].label}</Badge>
-              <span className="tabular-nums text-muted-foreground">{formatDateTime(e.created_at)}</span>
+              {whereIn(e.question_no) && <span className="font-semibold">{whereIn(e.question_no)}</span>}
+              {e.type === "camera_on" && offFor(e.detail) && <span className="text-muted-foreground">({offFor(e.detail)})</span>}
+              <span className="ml-auto tabular-nums text-muted-foreground">{formatDateTime(e.created_at)}</span>
             </li>
           ))}
         </ol>

@@ -17,6 +17,8 @@ export type MockAnswerState = {
 export type MockState = {
   attemptId: string;
   title: string;
+  /** Оқушының аты-жөні (сынақ экранының жоғарғы жолағында) */
+  studentName: string;
   deadlineAt: string;
   /** Сервер уақыты — клиент сағатының ауытқуын түзету үшін */
   serverNow: string;

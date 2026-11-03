@@ -94,13 +94,14 @@ export async function getMockState(attemptId: string, locale: string): Promise<M
     return "finished";
   }
 
-  const [{ data: answers }, { data: exam }, catalog] = await Promise.all([
+  const [{ data: answers }, { data: exam }, catalog, { data: profile }] = await Promise.all([
     admin
       .from("attempt_answers")
       .select("question_id, selected_option_ids, flagged, time_spent_ms")
       .eq("attempt_id", attempt.id),
     admin.from("mock_exams").select("title_kk, title_ru").eq("id", attempt.mock_exam_id!).single(),
     getCatalog(locale),
+    admin.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
   ]);
 
   const answerMap: Record<string, MockAnswerState> = {};
@@ -111,6 +112,7 @@ export async function getMockState(attemptId: string, locale: string): Promise<M
   return {
     attemptId: attempt.id,
     title: exam ? localized(exam, "title", locale) : "",
+    studentName: profile?.full_name ?? "",
     deadlineAt: attempt.deadline_at!,
     serverNow: new Date().toISOString(),
     questionIds: attempt.question_ids,
