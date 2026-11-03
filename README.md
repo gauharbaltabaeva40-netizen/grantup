@@ -56,7 +56,10 @@ src/lib/demo.ts              УАҚЫТША макет деректері (Supab
    - *Confirm signup*: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/device`
    - *Reset password*: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`
 6. **Project Settings → API Keys** → `.env.local`-ға: `NEXT_PUBLIC_SUPABASE_URL`, publishable (немесе anon) кілт, secret (немесе service_role) кілт.
-7. Production-да Supabase-тің кіріктірілген поштасы сағатына бірнеше хатпен шектеледі — **Authentication → SMTP** арқылы Resend SMTP қосыңыз.
+7. **Қазіргі күйі (2026-11):** пошта (SMTP) әлі қосылмағандықтан *Authentication → Sign In / Providers → Confirm email*
+   уақытша **өшірулі** — оқушы тіркелгенде бірден кіреді (тіркелу коды бұл жағдайды да қолдайды). Пошта дайын болғанда
+   SMTP-ны баптап, Confirm email-ді қайта қосыңыз және жоғарыдағы шаблондарды қойыңыз.
+8. Production-да Supabase-тің кіріктірілген поштасы сағатына бірнеше хатпен шектеледі — **Authentication → SMTP** арқылы Resend SMTP қосыңыз.
 
 **Админ:** `bekzatshemetaev24@gmail.com` осы email-мен тіркелгенде автоматты түрде `admin` рөлін алады
 (`supabase/migrations/20261101000200_admin_bootstrap.sql`). Админ панель: `/admin`.

@@ -42,7 +42,7 @@ export async function signUp(_: FormState, formData: FormData): Promise<FormStat
 
   const { fullName, email, password, grade, locale } = parsed.data;
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -54,12 +54,24 @@ export async function signUp(_: FormState, formData: FormData): Promise<FormStat
   if (error) {
     if (error.code === "weak_password") return { error: "weak_password", values };
     if (error.code === "over_email_send_rate_limit" || error.status === 429) return { error: "rate_limited", values };
+    // Email растау өшірулі болса, Supabase бар email-ге нақты қате қайтарады
+    if (error.code === "user_already_exists" || error.code === "email_exists") return { error: "email_taken", values };
     // Email бұрыннан тіркелген болса да, Supabase қауіпсіздік үшін сәтті жауап береді — бөлек хабарламаймыз.
     console.error("signUp failed", error);
     return { error: "unknown", values };
   }
 
   await setLocaleCookie(locale);
+  // Supabase-те «Confirm email» өшірулі болса, сессия бірден ашылады — құрылғыны тіркеуге өтеміз.
+  // Қосулы болса — поштаны растау беті.
+  if (data.session) {
+    try {
+      await recordLogin(data.session.user.id, info);
+    } catch (e) {
+      console.error("recordLogin failed", e);
+    }
+    redirect("/device");
+  }
   redirect("/check-email");
 }
 

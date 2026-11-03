@@ -43,4 +43,5 @@ export type AuthErrorKey =
   | "weak_password"
   | "same_password"
   | "session_expired"
+  | "email_taken"
   | "unknown";
