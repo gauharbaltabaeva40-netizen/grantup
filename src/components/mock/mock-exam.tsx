@@ -21,6 +21,7 @@ import { finishMock, getMockQuestion, saveMockAnswer } from "@/lib/mock/actions"
 import type { MockAnswerState, MockErrorKey, MockState } from "@/lib/mock/types";
 import type { QuizQuestion } from "@/lib/quiz/types";
 import { cn } from "@/lib/utils";
+import { ExamProctor } from "./proctor";
 
 type SaveStatus = "saved" | "saving" | "offline";
 const RETRY_MS = 5000;
@@ -421,6 +422,8 @@ export function MockExam({ state }: { state: MockState }) {
           <ArrowRight aria-hidden />
         </Button>
       </div>
+
+      <ExamProctor attemptId={attemptId} />
 
       <Sheet open={navOpen} onOpenChange={setNavOpen}>
         <SheetContent side="bottom" className="max-h-[80dvh] overflow-y-auto rounded-t-3xl">

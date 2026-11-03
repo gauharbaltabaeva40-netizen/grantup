@@ -20,6 +20,7 @@ import { HistoryChart } from "@/components/mock/history-chart";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { Protected } from "@/components/protection/protection";
 import { MotionDemo } from "./motion-demo";
+import { ProctorDemo } from "./proctor-demo";
 import { QuizDemo } from "./quiz-demo";
 
 // Дизайн жүйесінің беті — тек әзірлеу кезінде (production-да 404).
@@ -262,6 +263,10 @@ export default function StyleguidePage() {
 
       <Section title="Тест сұрағы">
         <QuizDemo />
+      </Section>
+
+      <Section title="Прокторинг: камера тексеру">
+        <ProctorDemo />
       </Section>
 
       <Section title="Анимациялар">

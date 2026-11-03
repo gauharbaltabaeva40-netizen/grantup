@@ -365,6 +365,25 @@ export type NotificationLog = {
   created_at: string;
 };
 
+export type ProctoringEventType =
+  | "consent"
+  | "snapshot"
+  | "no_face"
+  | "multiple_faces"
+  | "camera_off"
+  | "tab_hidden"
+  | "detector_unavailable";
+
+export type ProctoringEvent = {
+  id: number;
+  attempt_id: string;
+  user_id: string;
+  type: ProctoringEventType;
+  detail: Record<string, unknown>;
+  image_path: string | null;
+  created_at: string;
+};
+
 export type AppSetting = { key: string; value: Json; description: string | null; updated_at: string; updated_by: string | null };
 
 export type Database = {
@@ -414,6 +433,7 @@ export type Database = {
       push_subscriptions: Table<PushSubscription>;
       app_settings: Table<AppSetting>;
       notification_log: Table<NotificationLog>;
+      proctoring_events: Table<ProctoringEvent, Pick<ProctoringEvent, "attempt_id" | "user_id" | "type"> & Partial<Omit<ProctoringEvent, "id">>>;
     };
     Views: Record<string, never>;
     Functions: {
@@ -439,6 +459,21 @@ export type Database = {
           last_active_date: string | null;
           created_at: string;
           has_access: boolean;
+        }[];
+      };
+      admin_proctoring_attempts: {
+        Args: { p_limit?: number; p_offset?: number; p_user?: string | null };
+        Returns: {
+          attempt_id: string;
+          user_id: string;
+          started_at: string;
+          finished_at: string | null;
+          status: AttemptStatus;
+          no_face: number;
+          multiple_faces: number;
+          camera_off: number;
+          tab_hidden: number;
+          snapshots: number;
         }[];
       };
       admin_question_accuracy: { Args: { p_ids: string[] }; Returns: { question_id: string; total: number; correct: number }[] };

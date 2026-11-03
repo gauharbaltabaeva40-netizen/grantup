@@ -5,8 +5,8 @@
  *
  * МАҢЫЗДЫ: веб-браузерде скриншот пен экран жазуды 100% бұғаттау техникалық тұрғыда мүмкін емес
  * (телефонның скриншоты, екінші құрылғымен түсіру, ОЖ деңгейіндегі жазу т.б.).
- * Сондықтан мақсат — таратуды барынша ҚИЫНДАТУ және таратылса, КІМ таратқанын анықтау:
- *  - су таңбасы: оқушының email-і мен ID-і, орны ауысып тұрады (кез келген скриншотта көрінеді);
+ * Сондықтан мақсат — таратуды барынша ҚИЫНДАТУ және авторлықты көрсету:
+ *  - су таңбасы: GrantUp.kz логотипі, әлсіз, орны ауысып тұрады (скриншотта авторлықты көрсетеді);
  *  - мәтінді таңдау, көшіру, оң жақ мәзір, сүйреп апару өшірулі;
  *  - скриншот / басып шығару / сақтау / DevTools пернелері — экран бұлыңғырланады + ескерту + журнал;
  *  - басқа терезеге/қолданбаға ауысқанда — бұлыңғырланады;
@@ -36,8 +36,19 @@ export function useWatermark() {
   return useContext(WatermarkContext);
 }
 
+/** Логотип + «GrantUp.kz» белгісі (су таңбасының бір бөлігі) */
+function BrandMark({ text, size }: { text: string; size: number }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-bold text-foreground">
+      {/* eslint-disable-next-line @next/next/no-img-element -- кішкентай статикалық логотип, оңтайландыру керек емес */}
+      <img src="/logo.png" alt="" width={size} height={size} className="rounded-full" draggable={false} />
+      {text}
+    </span>
+  );
+}
+
 /**
- * Су таңбасы: әлсіз көрінетін тор + орны 15 секунд сайын ауысатын айқынырақ белгі.
+ * Су таңбасы: GrantUp.kz логотипі. Әлсіз тор + орны 15 секунд сайын ауысатын белгі.
  * pointer-events жоқ — оқуға және басуға кедергі келтірмейді. Ата-элементке `relative` керек.
  */
 export function Watermark({ className, dense = false }: { className?: string; dense?: boolean }) {
@@ -57,18 +68,18 @@ export function Watermark({ className, dense = false }: { className?: string; de
 
   return (
     <div aria-hidden className={cn("pointer-events-none absolute inset-0 z-30 overflow-hidden select-none", className)}>
-      <div className="absolute inset-0 grid grid-cols-2 content-around justify-items-center gap-y-16 opacity-[0.07] sm:grid-cols-3">
+      <div className="absolute inset-0 grid grid-cols-2 content-around justify-items-center gap-y-16 opacity-[0.04] sm:grid-cols-3">
         {Array.from({ length: tiles }, (_, i) => (
-          <span key={i} className="-rotate-[24deg] text-xs font-bold whitespace-nowrap text-foreground">
-            {mark}
+          <span key={i} className="-rotate-[24deg] text-xs">
+            <BrandMark text={mark} size={14} />
           </span>
         ))}
       </div>
       <span
-        className="absolute text-[11px] font-bold whitespace-nowrap text-foreground/25 transition-all duration-1000 sm:text-xs [text-shadow:0_0_2px_rgb(255_255_255/0.4)]"
+        className="absolute text-[11px] opacity-[0.12] transition-all duration-1000 sm:text-xs"
         style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
       >
-        {mark}
+        <BrandMark text={mark} size={16} />
       </span>
     </div>
   );

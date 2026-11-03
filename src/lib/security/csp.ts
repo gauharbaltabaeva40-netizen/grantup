@@ -19,7 +19,8 @@ export function buildCsp(nonce: string) {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     // strict-dynamic: сенімді скрипт жүктеген скрипттерге (YouTube IFrame API) рұқсат
-    "script-src": ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", "https://www.youtube.com", ...(dev ? ["'unsafe-eval'"] : [])],
+    // 'wasm-unsafe-eval' — тек WebAssembly компиляциясына (прокторингтегі бет анықтау), JS eval-ға рұқсат бермейді
+    "script-src": ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'", "'wasm-unsafe-eval'", "https://www.youtube.com", ...(dev ? ["'unsafe-eval'"] : [])],
     // KaTeX пен React inline стильдері
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", "https://i.ytimg.com", ...(supabase ? [supabase] : [])],

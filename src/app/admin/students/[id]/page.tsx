@@ -132,6 +132,11 @@ export default async function AdminStudentPage({ params }: { params: Promise<{ i
                       {formatDateTime(a.finished_at ?? a.started_at)} · {statusLabel[a.status]}
                     </span>
                   </span>
+                  {a.kind === "mock" && (
+                    <Link href={`/admin/proctoring/${a.id}`} className="ml-auto text-xs font-semibold text-primary">
+                      Прокторинг
+                    </Link>
+                  )}
                   <span className="font-bold tabular-nums">
                     {a.score != null && a.max_score
                       ? a.kind === "mock"

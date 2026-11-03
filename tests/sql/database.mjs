@@ -577,6 +577,21 @@ await check("mock_100 uses the 140-point scale", async () => {
   const codes = (await q(`select * from check_achievements($1) c`, [u.id])).map((r) => r.c);
   assert(codes.includes("mock_100"), JSON.stringify(codes)); // 30/34 → 123.5 / 140
 });
+await check("proctoring: events hidden from API, admin summary counts", async () => {
+  const [u] = await q(`insert into auth.users (email) values ('proctor@test.kz') returning id`);
+  const [m] = await q(`select id from mock_exams limit 1`);
+  const [a] = await q(`insert into attempts (user_id, kind, locale, mock_exam_id) values ($1, 'mock', 'kk', $2) returning id`, [u.id, m.id]);
+  for (const type of ["consent", "no_face", "no_face", "multiple_faces", "tab_hidden"]) {
+    await q(`insert into proctoring_events (attempt_id, user_id, type, image_path) values ($1, $2, $3, $4)`, [a.id, u.id, type, type === "no_face" ? "x.jpg" : null]);
+  }
+  await expectFail(q(`insert into proctoring_events (attempt_id, user_id, type) values ($1, $2, 'bogus')`, [a.id, u.id]));
+  const rows = await as("authenticated", u.id, `select count(*)::int n from proctoring_events`).catch(() => [{ n: -1 }]);
+  assert(rows[0].n <= 0, "student must not read proctoring events");
+  await expectFail(as("authenticated", u.id, `insert into proctoring_events (attempt_id, user_id, type) values ('${a.id}', '${u.id}', 'consent')`));
+  const [r] = await q(`select no_face::int, multiple_faces::int, tab_hidden::int, snapshots::int from admin_proctoring_attempts(10, 0, $1)`, [u.id]);
+  assert(r.no_face === 2 && r.multiple_faces === 1 && r.tab_hidden === 1 && r.snapshots === 2, JSON.stringify(r));
+  await expectFail(as("authenticated", u.id, `select * from admin_proctoring_attempts()`));
+});
 await check("admin_students: search + access filter + paging", async () => {
   const all = await q(`select id, has_access from admin_students('TEST.kz', null, 50, 0)`);
   const ids = all.map((r) => r.id);

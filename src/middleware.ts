@@ -106,6 +106,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Статикалық файлдар мен суреттерден басқаның бәрі
-    "/((?!_next/static|_next/image|icons/|logo.png|icon.png|apple-icon.png|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
+    "/((?!_next/static|_next/image|icons/|mediapipe/|models/|logo.png|icon.png|apple-icon.png|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml)$).*)",
   ],
 };

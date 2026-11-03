@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { BookOpen, ClipboardList, FileQuestion, KeyRound, LayoutDashboard, ScrollText, Settings, Smartphone, Users } from "lucide-react";
+import { BookOpen, ClipboardList, FileQuestion, KeyRound, LayoutDashboard, ScanFace, ScrollText, Settings, Smartphone, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -14,6 +14,7 @@ const items = [
   { href: "/admin/content", key: "content", icon: BookOpen },
   { href: "/admin/questions", key: "questions", icon: FileQuestion },
   { href: "/admin/mocks", key: "mocks", icon: ClipboardList },
+  { href: "/admin/proctoring", key: "proctoring", icon: ScanFace },
   { href: "/admin/settings", key: "settings", icon: Settings },
   { href: "/admin/security", key: "security", icon: ScrollText },
 ] as const;
