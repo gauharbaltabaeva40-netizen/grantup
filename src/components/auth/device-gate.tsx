@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Ban, Loader2, RefreshCw, ShieldCheck, ShieldX, Smartphone } from "lucide-react";
 import { FormMessage } from "@/components/forms/fields";
@@ -15,23 +14,34 @@ type View = DeviceStatus | { status: "checking" };
 
 export function DeviceGate({ next }: { next: string }) {
   const t = useTranslations("device");
-  const router = useRouter();
   const [view, setView] = useState<View>({ status: "checking" });
   const [codeError, setCodeError] = useState<Extract<CodeResult, { ok: false }> | null>(null);
   const [pending, startTransition] = useTransition();
   const identity = useRef<DeviceIdentity | null>(null);
 
+  /**
+   * Құрылғы расталған соң — толық (hard) навигация. Клиенттік router.replace жарамайды:
+   * бет ашылғанда Next.js басқа беттерді алдын ала жүктеп (prefetch) қояды, ол кезде cookie әлі жоқ,
+   * middleware оларды /device-ке қайтарған — сол кэштегі редирект қолданылып, бет ауыспай қалады.
+   */
+  const leave = useCallback(() => window.location.replace(next), [next]);
+
   const check = useCallback(async () => {
-    identity.current ??= await getDeviceIdentity();
-    const result = await registerDevice(identity.current);
-    if (result.status === "ok") {
-      storeDeviceKey(result.deviceKey);
-      router.replace(next);
-      router.refresh();
-      return;
+    try {
+      identity.current ??= await getDeviceIdentity();
+      const result = await registerDevice(identity.current);
+      if (result.status === "ok") {
+        storeDeviceKey(result.deviceKey);
+        leave();
+        return;
+      }
+      setView(result);
+    } catch (error) {
+      // Желі үзілсе немесе сервер жауап бермесе — шексіз айналмай, қайталау батырмасын көрсетеміз
+      console.error("device check failed", error);
+      setView({ status: "error", error: "unknown" });
     }
-    setView(result);
-  }, [next, router]);
+  }, [leave]);
 
   useEffect(() => {
     void check();
@@ -43,8 +53,7 @@ export function DeviceGate({ next }: { next: string }) {
       if (!identity.current) return;
       const result = await confirmDeviceCode(identity.current, code);
       if (result.ok) {
-        router.replace(next);
-        router.refresh();
+        leave();
         return;
       }
       setCodeError(result);
