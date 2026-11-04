@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import { Logo } from "@/components/brand/logo";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { WatermarkProvider } from "@/components/protection/protection";
 import { getWatermarkText } from "@/lib/security/watermark";
+
+// Жеке беттер іздеу жүйелерінде көрсетілмейді
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (

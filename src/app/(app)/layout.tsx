@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { getCurrentProfile } from "@/lib/auth/session";
+
+// Жеке беттер іздеу жүйелерінде көрсетілмейді
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   // Жаңа оқушы алдымен онбордингтен өтеді (админдерден басқа)

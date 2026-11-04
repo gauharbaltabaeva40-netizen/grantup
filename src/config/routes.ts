@@ -6,6 +6,11 @@ export const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/check-ema
 /** Кірусіз де, кірген күйде де ашылатын беттер. */
 export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest", "/api/cron"];
 
+/** Ашық басты беттің ішкі маршруты: «/» және «/ru» осыған rewrite жасалады. */
+export const LANDING_PATH = "/landing";
+/** Лендинг тілі (middleware қояды, i18n/request.ts оқиды) */
+export const LANDING_LOCALE_HEADER = "x-gu-landing-locale";
+
 /** Кіру керек, бірақ құрылғы тексерілмейді (құрылғыны тіркеу беті). */
 export const DEVICE_ROUTE = "/device";
 

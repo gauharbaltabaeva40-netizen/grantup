@@ -137,6 +137,15 @@ SMTP қосылған соң:
 - `ANTHROPIC_API_KEY` тек апталық жоспарды AI-мен құру үшін (қойылмаса — ережелермен). Лимит — Админ → Баптаулар → `ai_limits`.
 - Push VAPID кілттерімен бірден жұмыс істейді; iPhone-да тек сайт «Басты экранға қосылғанда» (PWA) жұмыс істейді.
 
+### 4.6 SEO
+
+- Ашық беттер: `/` (қазақша лендинг), `/ru` (орысша), `/login`, `/signup`. Кірмеген адамға `/` лендинг болып ашылады
+  (middleware → `src/app/(public)/landing`), кірген оқушыға — жеке кабинет. Жеке беттер `noindex` және robots.txt-те жабық.
+- `robots.txt`, `sitemap.xml`, Open Graph суреті (`public/og.png`), JSON-LD (ұйым, сайт, FAQ), hreflang kk/ru.
+- Канондық адрес `NEXT_PUBLIC_SITE_URL`-дан алынады — домен ауысқанда соны өзгертіп, Redeploy жасаңыз.
+- Google Search Console / Яндекс Вебмастер: растау кодын `GOOGLE_SITE_VERIFICATION` / `YANDEX_VERIFICATION` env-ке қойып,
+  Redeploy, содан кейін консольде `sitemap.xml` жіберіңіз.
+
 ## 5. Деплойдан кейінгі тексеру тізімі
 
 - [ ] `/login`, `/signup` ашылады; кірмеген адам `/`-ден `/login`-ге жіберіледі

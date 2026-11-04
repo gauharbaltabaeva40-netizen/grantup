@@ -24,6 +24,19 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: "GrantUp",
     appleWebApp: { capable: true, title: "GrantUp", statusBarStyle: "default" },
     formatDetection: { telephone: false },
+    openGraph: {
+      type: "website",
+      siteName: "GrantUp",
+      title: t("title"),
+      description: t("description"),
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "GrantUp — ҰБТ-ға онлайн дайындық" }],
+    },
+    twitter: { card: "summary_large_image", images: ["/og.png"] },
+    // Google Search Console / Яндекс Вебмастер растау кодтары (Vercel env арқылы)
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+      yandex: process.env.YANDEX_VERIFICATION || undefined,
+    },
   };
 }
 

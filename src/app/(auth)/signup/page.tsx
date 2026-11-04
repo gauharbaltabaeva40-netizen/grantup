@@ -4,7 +4,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 
 export async function generateMetadata() {
   const t = await getTranslations("auth");
-  return { title: t("signupTitle") };
+  return { title: t("signupTitle"), description: t("signupSubtitle"), alternates: { canonical: "/signup" } };
 }
 
 export default async function SignupPage() {

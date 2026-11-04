@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { AUTH_ROUTES, DEVICE_ROUTE, matchesRoute, PUBLIC_ROUTES } from "@/config/routes";
+import { AUTH_ROUTES, DEVICE_ROUTE, LANDING_LOCALE_HEADER, LANDING_PATH, matchesRoute, PUBLIC_ROUTES } from "@/config/routes";
+import { LOCALE_COOKIE, type Locale } from "@/i18n/config";
 import {
   DEVICE_COOKIE,
   deviceCookieOptions,
@@ -14,7 +15,7 @@ import type { Database } from "@/lib/supabase/types";
 /**
  * Әр сұраныста:
  * 1. Supabase сессиясын жаңартады.
- * 2. Кірмеген пайдаланушыны /login-ге жібереді.
+ * 2. Кірмеген пайдаланушыға «/» және «/ru» — ашық басты бет (лендинг), қалғанында /login-ге жібереді.
  * 3. Құрылғы cookie-ін тексереді: расталмаған құрылғы → /device (2 құрылғы шегі).
  * 4. Nonce-пен CSP тақырыбын қояды (бөтен скрипттерді бұғаттау).
  * Нақты деректерді қорғау — RLS пен сервердегі тексерулерде; бұл — бірінші қабат.
@@ -25,14 +26,34 @@ export async function middleware(request: NextRequest) {
   // Next.js сұраныс тақырыбындағы CSP-ден nonce-ты оқып, өз скрипттеріне қосады
   request.headers.set("x-nonce", nonce);
   request.headers.set("content-security-policy", csp);
+  // Тіл тақырыбын тек осы middleware қояды (клиенттен келгенін өшіреміз)
+  request.headers.delete(LANDING_LOCALE_HEADER);
   const passThrough = () => {
     const res = NextResponse.next({ request: { headers: request.headers } });
     res.headers.set("content-security-policy", csp);
     return res;
   };
 
+  /** Ашық басты бет (іздеу жүйелері үшін): «/» — қазақша, «/ru» — орысша. Тіл cookie-і де соған қойылады. */
+  const landing = (locale: Locale, carry?: NextResponse) => {
+    request.headers.set(LANDING_LOCALE_HEADER, locale);
+    const url = request.nextUrl.clone();
+    url.pathname = LANDING_PATH;
+    const res = NextResponse.rewrite(url, { request: { headers: request.headers } });
+    res.headers.set("content-security-policy", csp);
+    for (const cookie of carry?.cookies.getAll() ?? []) res.cookies.set(cookie);
+    res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 365 * 86400, sameSite: "lax" });
+    return res;
+  };
+  // Ішкі маршрутқа тікелей кіруге болмайды (қайталанатын мазмұн болмасын)
+  if (request.nextUrl.pathname.startsWith(LANDING_PATH)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url, 308);
+  }
+
   // Демо режим: Supabase кілттері жоқ — тексерусіз өткіземіз (тек әзірлеу үшін).
-  if (!isSupabaseConfigured) return passThrough();
+  if (!isSupabaseConfigured) return request.nextUrl.pathname === "/ru" ? landing("ru") : passThrough();
 
   let response = passThrough();
 
@@ -67,6 +88,12 @@ export async function middleware(request: NextRequest) {
     if (clearDevice) res.cookies.delete(DEVICE_COOKIE);
     return res;
   };
+
+  if (pathname === "/") {
+    if (!userId) return landing("kk", response);
+  } else if (pathname === "/ru") {
+    return userId ? redirectTo("/") : landing("ru", response);
+  }
 
   if (matchesRoute(pathname, PUBLIC_ROUTES)) return response;
 

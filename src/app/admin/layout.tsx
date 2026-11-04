@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -8,6 +9,9 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { isAdminDemo } from "@/lib/admin/server";
 import { getCurrentProfile } from "@/lib/auth/session";
+
+// Жеке беттер іздеу жүйелерінде көрсетілмейді
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // Админ-панель. Қорғау: middleware (кіру + құрылғы) → осы layout (рөл) → әр бетте adminPage()
 // → әр action ішінде requireAdmin() → RLS. Жаңа бөлімдердің интерфейсі тек қазақша.

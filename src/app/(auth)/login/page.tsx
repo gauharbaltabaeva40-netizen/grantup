@@ -5,7 +5,7 @@ import { safeNext } from "@/config/routes";
 
 export async function generateMetadata() {
   const t = await getTranslations("auth");
-  return { title: t("submitLogin") };
+  return { title: t("submitLogin"), description: t("loginSubtitle"), alternates: { canonical: "/login" } };
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
