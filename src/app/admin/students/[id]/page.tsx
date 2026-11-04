@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { GrantAccessForm, GrantRow } from "@/components/admin/access-grants";
+import { ResetPasswordButton } from "@/components/admin/reset-password-button";
 import { RevokeDeviceButton } from "@/components/admin/revoke-device-button";
 import { AdminHeader, Panel, Stat } from "@/components/admin/ui";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,17 @@ export default async function AdminStudentPage({ params }: { params: Promise<{ i
           )}
           <GrantAccessForm defaultStart={today} defaultEnd={defaultEnd} defaultEmail={profile.email} />
         </Panel>
+
+        {profile.role === "student" && (
+          <Panel title="Құпиясөз">
+            <p className="mb-4 text-sm text-muted-foreground">
+              Құпиясөзді ешкім көре алмайды — ол шифрланып сақталады. Оқушы ұмытса, уақытша құпиясөз беріңіз: ол сонымен кіріп,
+              бірден өз құпиясөзін қояды.
+              {profile.must_change_password && <span className="mt-1 block font-semibold text-foreground">Уақытша құпиясөз берілген — оқушы әлі ауыстырған жоқ.</span>}
+            </p>
+            <ResetPasswordButton userId={profile.id} studentName={profile.full_name || profile.email} />
+          </Panel>
+        )}
 
         <Panel title="Құрылғылар">
           {(devices ?? []).length === 0 ? (

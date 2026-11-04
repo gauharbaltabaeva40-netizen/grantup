@@ -19,6 +19,7 @@ import { getMockOverview } from "@/lib/mock/data";
 import { getSetting } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { ChangePasswordForm } from "@/components/auth/password-forms";
 import { getViewer } from "@/lib/viewer";
 
 export const generateMetadata = () => placeholderMetadata("profile");
@@ -218,6 +219,12 @@ export default async function ProfilePage() {
             );
           })}
         </ul>
+      </Section>
+
+      <Section title={tauth("changeTitle")} description={`${tauth("changeText")} ${tauth("forgotHint")}`}>
+        <div className="max-w-sm">
+          <ChangePasswordForm />
+        </div>
       </Section>
 
       <div className="flex flex-col gap-3 sm:flex-row">

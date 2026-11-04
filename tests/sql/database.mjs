@@ -634,5 +634,14 @@ await check("duels: players read own duel only, no API writes, duel attempts all
   assert(a.kind === "duel", JSON.stringify(a));
 });
 
+await check("password reset: student cannot clear must_change_password; revoke function is server-only", async () => {
+  await q(`update profiles set must_change_password = true where id = $1`, [s1.id]);
+  await expectFail(as("authenticated", s1.id, `update profiles set must_change_password = false where id = '${s1.id}'`));
+  const [r] = await q(`select must_change_password from profiles where id = $1`, [s1.id]);
+  assert(r.must_change_password === true, JSON.stringify(r));
+  await expectFail(as("authenticated", s1.id, `select public.admin_revoke_sessions('${s1.id}')`));
+  await q(`update profiles set must_change_password = false where id = $1`, [s1.id]);
+});
+
 console.log(failures ? `\n${failures} FAILED` : "\nall passed");
 process.exit(failures ? 1 : 0);

@@ -4,14 +4,18 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeNext } from "@/config/routes";
 import { DEVICE_COOKIE } from "@/lib/device/cookie";
-import { isSupabaseConfigured, siteUrl } from "@/lib/env";
+import { isSupabaseConfigured, siteUrl, supabasePublicKey, supabaseUrl } from "@/lib/env";
 import { LOCALE_COOKIE } from "@/i18n/config";
 import { rateLimit } from "@/lib/rate-limit";
 import { getRequestInfo } from "@/lib/request-info";
 import { recordLogin } from "@/lib/security/events";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { getSessionUser } from "@/lib/auth/session";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   type FormState,
+  changePasswordSchema,
   newPasswordSchema,
   resetRequestSchema,
   signInSchema,
@@ -167,4 +171,48 @@ export async function updatePassword(_: FormState, formData: FormData): Promise<
   }
 
   redirect("/device?next=/");
+}
+
+/**
+ * Құпиясөзді өзгерту (профильден немесе әкімші уақытша құпиясөз бергеннен кейін).
+ * Ағымдағы құпиясөз бөлек, сессиясыз клиентпен тексеріледі; жаңасы service_role арқылы қойылады.
+ */
+export async function changePassword(_: FormState, formData: FormData): Promise<FormState> {
+  if (!isSupabaseConfigured) return { error: "not_configured" };
+
+  const parsed = changePasswordSchema.safeParse({
+    current: formData.get("current"),
+    password: formData.get("password"),
+    confirm: formData.get("confirm"),
+  });
+  if (!parsed.success) {
+    const mismatch = parsed.error.issues.some((i) => i.message === "password_mismatch");
+    return { error: mismatch ? "password_mismatch" : "invalid_input" };
+  }
+  const { current, password } = parsed.data;
+  if (current === password) return { error: "same_password" };
+
+  const user = await getSessionUser();
+  if (!user) return { error: "session_expired" };
+  if (!(await rateLimit(`password:change:${user.id}`, 10, 15 * 60))) return { error: "rate_limited" };
+
+  const verifier = createSupabaseClient(supabaseUrl, supabasePublicKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  const { data: check, error: checkError } = await verifier.auth.signInWithPassword({ email: user.email, password: current });
+  if (checkError || check.user?.id !== user.id) return { error: "wrong_current" };
+  // Тексеру үшін ашылған уақытша сессияны жабамыз (басқа құрылғылардағы сессияларға тимейді)
+  await verifier.auth.signOut({ scope: "local" }).catch(() => {});
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(user.id, { password });
+  if (error) {
+    if (error.code === "weak_password") return { error: "weak_password" };
+    console.error("change password failed", error);
+    return { error: "unknown" };
+  }
+  await admin.from("profiles").update({ must_change_password: false }).eq("id", user.id);
+
+  if (formData.get("forced") === "1") redirect("/");
+  return { ok: true };
 }

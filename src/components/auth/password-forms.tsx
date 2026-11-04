@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Field, FormMessage, PasswordInput, SubmitButton } from "@/components/forms/fields";
 import { Input } from "@/components/ui/input";
-import { requestPasswordReset, updatePassword } from "@/lib/auth/actions";
+import { changePassword, requestPasswordReset, updatePassword } from "@/lib/auth/actions";
 import type { FormState } from "@/lib/auth/schemas";
 
 export function ForgotPasswordForm() {
@@ -51,6 +51,30 @@ export function ResetPasswordForm() {
         <PasswordInput id="confirm" name="confirm" autoComplete="new-password" minLength={8} maxLength={72} required />
       </Field>
       <SubmitButton>{t("resetSubmit")}</SubmitButton>
+    </form>
+  );
+}
+
+/** Құпиясөзді өзгерту: профильде (forced=false) және уақытша құпиясөзден кейін (forced=true → басты бетке) */
+export function ChangePasswordForm({ forced = false }: { forced?: boolean }) {
+  const t = useTranslations("auth");
+  const [state, action] = useActionState<FormState, FormData>(changePassword, {});
+
+  return (
+    <form action={action} className="space-y-4" key={state.ok ? "done" : "form"}>
+      {state.error && <FormMessage>{t(`errors.${state.error}`)}</FormMessage>}
+      {state.ok && <FormMessage tone="success">{t("changed")}</FormMessage>}
+      <input type="hidden" name="forced" value={forced ? "1" : "0"} />
+      <Field label={forced ? t("tempPassword") : t("currentPassword")} htmlFor="current">
+        <PasswordInput id="current" name="current" autoComplete="current-password" maxLength={72} required />
+      </Field>
+      <Field label={t("newPassword")} htmlFor="new-password" hint={t("passwordHint")}>
+        <PasswordInput id="new-password" name="password" autoComplete="new-password" minLength={8} maxLength={72} required />
+      </Field>
+      <Field label={t("confirmPassword")} htmlFor="confirm-password">
+        <PasswordInput id="confirm-password" name="confirm" autoComplete="new-password" minLength={8} maxLength={72} required />
+      </Field>
+      <SubmitButton>{t("changeSubmit")}</SubmitButton>
     </form>
   );
 }

@@ -41,6 +41,7 @@ export type Profile = {
   celebrated_streak_date: string | null;
   created_at: string;
   updated_at: string;
+  must_change_password: boolean;
 };
 
 export type AccessGrant = {
@@ -503,6 +504,7 @@ export type Database = {
       buy_streak_freeze: { Args: { p_user: string }; Returns: string };
       close_league_week: { Args: { p_week: string }; Returns: number };
       check_achievements: { Args: { p_user: string }; Returns: string[] };
+      admin_revoke_sessions: { Args: { p_user: string }; Returns: number };
       ai_usage_hit: { Args: { p_user: string; p_day: string; p_kind: string; p_max: number }; Returns: boolean };
       ai_usage_refund: { Args: { p_user: string; p_day: string; p_kind: string }; Returns: undefined };
       award_xp: {

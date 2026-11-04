@@ -33,6 +33,7 @@ export function LoginForm({ next, linkError }: { next?: string; linkError?: bool
         <PasswordInput id="password" name="password" autoComplete="current-password" required />
       </Field>
       <SubmitButton>{t("submitLogin")}</SubmitButton>
+      <p className="text-center text-xs text-muted-foreground">{t("forgotHint")}</p>
 
       <p className="pt-2 text-center text-sm text-muted-foreground">
         {t("noAccount")}{" "}

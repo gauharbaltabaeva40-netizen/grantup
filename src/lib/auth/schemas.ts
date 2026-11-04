@@ -25,6 +25,10 @@ export const newPasswordSchema = z
   .object({ password: passwordSchema, confirm: z.string() })
   .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "password_mismatch" });
 
+export const changePasswordSchema = z
+  .object({ current: z.string().min(1).max(72), password: passwordSchema, confirm: z.string() })
+  .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "password_mismatch" });
+
 /** Форма күйі (useActionState). `error` — messages/*.json → auth.errors.<key> */
 export type FormState = {
   error?: AuthErrorKey;
@@ -44,4 +48,5 @@ export type AuthErrorKey =
   | "same_password"
   | "session_expired"
   | "email_taken"
+  | "wrong_current"
   | "unknown";

@@ -2,10 +2,12 @@
 
 // Админ әрекеттері. Әрқайсысы: requireAdmin → service_role арқылы өзгеріс → audit_log.
 
+import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { emailSchema } from "@/lib/auth/schemas";
 import { requireAdmin } from "@/lib/auth/session";
 import { CODE_TTL_HOURS, generateCode, hashCode, MAX_DEVICES } from "@/lib/device/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { audit, fail, refreshAdmin } from "./audit";
 import type { AdminResult } from "./types";
@@ -265,6 +267,50 @@ export async function bulkGrantAccess(
     await audit(actor.id, "access.bulk_grant", "access_grant", "bulk", { count: parsed.data.length });
     refreshAdmin();
     return { ok: true, data: { inserted: parsed.data.length } };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+// ---------------------------------------------------------------------
+// Құпиясөзді қалпына келтіру (email жоқ — әкімші арқылы)
+// ---------------------------------------------------------------------
+
+/** Шатастырмайтын таңбалар: 0/O, 1/l/I жоқ */
+const TEMP_PASSWORD_ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function generateTempPassword() {
+  const pick = () => TEMP_PASSWORD_ALPHABET[randomInt(0, TEMP_PASSWORD_ALPHABET.length)];
+  return `${Array.from({ length: 5 }, pick).join("")}-${Array.from({ length: 5 }, pick).join("")}`;
+}
+
+/**
+ * Оқушыға уақытша құпиясөз: ТЕК осы жауапта бір рет қайтарылады (ешқайда сақталмайды).
+ * Оқушының барлық сессиясы жабылады; келесі кіргенде өз құпиясөзін қоюы міндетті.
+ */
+export async function resetStudentPassword(userId: string): Promise<AdminResult<{ password: string }>> {
+  try {
+    const actor = await requireAdmin();
+    if (!z.uuid().safeParse(userId).success) return { ok: false, error: "invalid_input" };
+    if (!(await rateLimit(`admin:pwreset:${actor.id}`, 30, 3600))) return { ok: false, error: "unknown", detail: "Тым жиі." };
+
+    const admin = createAdminClient();
+    const { data: profile } = await admin.from("profiles").select("id, role").eq("id", userId).maybeSingle();
+    if (!profile) return { ok: false, error: "not_found" };
+    // Әкімші аккаунттарына бұл жол арқылы құпиясөз берілмейді
+    if (profile.role !== "student") return { ok: false, error: "forbidden" };
+
+    const password = generateTempPassword();
+    const { error } = await admin.auth.admin.updateUserById(userId, { password });
+    if (error) throw error;
+
+    await admin.from("profiles").update({ must_change_password: true }).eq("id", userId);
+    const { error: revokeError } = await admin.rpc("admin_revoke_sessions", { p_user: userId });
+    if (revokeError) console.error("admin_revoke_sessions failed", revokeError);
+
+    await audit(actor.id, "student.password_reset", "user", userId);
+    refreshAdmin();
+    return { ok: true, data: { password } };
   } catch (error) {
     return fail(error);
   }
