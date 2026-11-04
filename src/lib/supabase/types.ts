@@ -6,7 +6,7 @@ export type GradeLevel = "10" | "11" | "graduate";
 export type AppLocale = "kk" | "ru";
 export type DeviceRequestStatus = "pending" | "approved" | "rejected" | "used" | "blocked" | "expired";
 export type QuestionType = "single" | "multiple";
-export type AttemptKind = "diagnostic" | "lesson_quiz" | "practice" | "mistakes" | "mock";
+export type AttemptKind = "diagnostic" | "lesson_quiz" | "practice" | "mistakes" | "mock" | "duel";
 export type AttemptStatus = "in_progress" | "finished" | "expired" | "abandoned";
 type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -264,6 +264,25 @@ export type Attempt = {
   updated_at: string;
 };
 
+export type Duel = {
+  id: string;
+  code: string;
+  subject_id: number | null;
+  locale: AppLocale;
+  question_ids: string[];
+  option_order: Json;
+  creator_id: string;
+  opponent_id: string | null;
+  creator_attempt_id: string | null;
+  opponent_attempt_id: string | null;
+  is_open: boolean;
+  winner_id: string | null;
+  is_draw: boolean;
+  expires_at: string;
+  finished_at: string | null;
+  created_at: string;
+};
+
 export type AttemptAnswer = {
   attempt_id: string;
   question_id: string;
@@ -435,6 +454,7 @@ export type Database = {
       push_subscriptions: Table<PushSubscription>;
       app_settings: Table<AppSetting>;
       notification_log: Table<NotificationLog>;
+      duels: Table<Duel, Pick<Duel, "code" | "locale" | "question_ids" | "creator_id"> & Partial<Duel>>;
       proctoring_events: Table<ProctoringEvent, Pick<ProctoringEvent, "attempt_id" | "user_id" | "type"> & Partial<Omit<ProctoringEvent, "id">>>;
     };
     Views: Record<string, never>;

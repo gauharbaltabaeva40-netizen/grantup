@@ -615,5 +615,24 @@ await check("admin_students: search + access filter + paging", async () => {
   await expectFail(as("authenticated", admin.id, `select * from admin_students()`));
 });
 
+await check("duels: players read own duel only, no API writes, duel attempts allowed", async () => {
+  const [{ id: subject }] = await q(`select id from subjects limit 1`);
+  const [{ id: qid }] = await q(`select id from questions limit 1`);
+  const [d] = await q(
+    `insert into duels (code, subject_id, locale, question_ids, creator_id, opponent_id) values ('ABC234', $1, 'kk', array[$2::uuid], $3, $4) returning id`,
+    [subject, qid, s1.id, s2.id],
+  );
+  const mine = await as("authenticated", s1.id, `select id from duels`);
+  const theirs = await as("authenticated", s2.id, `select id from duels`);
+  const other = await as("authenticated", admin.id, `select id from duels`);
+  assert(mine.length === 1 && theirs.length === 1 && other.length === 0, JSON.stringify({ mine, theirs, other }));
+  await expectFail(as("authenticated", s1.id, `insert into duels (code, locale, question_ids, creator_id) values ('XYZ234', 'kk', array['${qid}'::uuid], '${s1.id}')`));
+  await expectFail(as("authenticated", s1.id, `update duels set winner_id = '${s1.id}' where id = '${d.id}'`).then((r) => { if (!r.length) throw new Error("no rows"); return r; }));
+  await expectFail(q(`insert into duels (code, locale, question_ids, creator_id, opponent_id) values ('SAME23', 'kk', array[$1::uuid], $2, $2)`, [qid, s1.id]));
+  await expectFail(q(`insert into duels (code, locale, question_ids, creator_id) values ('bad', 'kk', array[$1::uuid], $2)`, [qid, s1.id]));
+  const [a] = await q(`insert into attempts (user_id, kind, locale, question_ids) values ($1, 'duel', 'kk', array[$2::uuid]) returning kind`, [s1.id, qid]);
+  assert(a.kind === "duel", JSON.stringify(a));
+});
+
 console.log(failures ? `\n${failures} FAILED` : "\nall passed");
 process.exit(failures ? 1 : 0);

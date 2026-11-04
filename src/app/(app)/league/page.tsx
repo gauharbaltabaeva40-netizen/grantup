@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowDown, ArrowUp, Trophy } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronRight, Swords, Trophy } from "lucide-react";
 import { EmptyState } from "@/components/brand/empty-state";
 import { WeekCountdown } from "@/components/gamification/week-countdown";
 import { PageHeader } from "@/components/layout/page-header";
@@ -16,7 +16,7 @@ export async function generateMetadata() {
 }
 
 export default async function LeaguePage() {
-  const [t, tv, locale] = await Promise.all([getTranslations("league"), getTranslations("leagueView"), getLocale()]);
+  const [t, tv, td, locale] = await Promise.all([getTranslations("league"), getTranslations("leagueView"), getTranslations("duel"), getLocale()]);
   const league = isSupabaseConfigured ? await getLeagueView(locale) : null;
 
   if (!league) {
@@ -35,6 +35,20 @@ export default async function LeaguePage() {
   return (
     <FadeIn className="mx-auto max-w-2xl space-y-5">
       <PageHeader title={t("title")} description={t("description")} />
+
+      <Link
+        href="/duel"
+        className="hover-lift flex items-center gap-3 rounded-2xl bg-[#0b1026] p-4 text-white shadow-soft outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#fb923c] to-[#ef4444]">
+          <Swords className="size-5" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1 text-sm">
+          <span className="block font-extrabold">{td("homeTitle")}</span>
+          <span className="block text-white/70">{td("homeText")}</span>
+        </span>
+        <ChevronRight className="size-5 text-white/60" aria-hidden />
+      </Link>
 
       {/* Лига белгісі */}
       <section className="flex items-center gap-4 rounded-2xl p-5 text-white shadow-soft" style={{ background: `linear-gradient(135deg, ${league.tier.color}, #0b1533)` }}>

@@ -15,6 +15,7 @@ const kindLabel = {
   lesson_quiz: "Сабақ тесті",
   practice: "Жаттығу",
   mistakes: "Қателер",
+  duel: "Дуэль",
   mock: "Сынақ ҰБТ",
 } as const;
 
