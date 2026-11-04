@@ -15,8 +15,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // Админ сұрақ суретін (≤ 2 МБ) және импорт жолдарын Server Action арқылы жібереді
-  experimental: { serverActions: { bodySizeLimit: "3mb" } },
+  experimental: {
+    serverActions: {
+      // Админ сұрақ суретін (≤ 2 МБ) және импорт жолдарын Server Action арқылы жібереді
+      bodySizeLimit: "3mb",
+      // grantup.kz Қазақстандағы прокси арқылы ашылады: браузердің Origin-і grantup.kz, ал Vercel-ге Host — *.vercel.app
+      allowedOrigins: ["grantup.kz", "www.grantup.kz"],
+    },
+  },
   // Метадеректерді (title, description) әрдайым <head>-ке жазу: generateMetadata жылдам (тек аударма),
   // ал ағынмен (streaming) берілсе, кейбір сканерлер мен превью жасаушылар сипаттаманы көрмейді.
   htmlLimitedBots: /.*/,

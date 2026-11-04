@@ -8,8 +8,9 @@ import {
   signDeviceToken,
   verifyDeviceToken,
 } from "@/lib/device/cookie";
-import { getAppSecret, isSupabaseConfigured, supabasePublicKey, supabaseUrl } from "@/lib/env";
+import { getAppSecret, isSupabaseConfigured, siteUrl, supabasePublicKey, supabaseUrl } from "@/lib/env";
 import { buildCsp, createNonce } from "@/lib/security/csp";
+import { isTrustedProxy } from "@/lib/security/proxy";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -45,6 +46,17 @@ export async function middleware(request: NextRequest) {
     res.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 365 * 86400, sameSite: "lax" });
     return res;
   };
+  // grantup.kz іске қосылғаннан кейін: vercel.app-қа тікелей кіргендерді негізгі доменге жібереміз
+  // (прокси арқылы келген сұраныстар мен cron-ды қоспағанда). Vercel env: REDIRECT_TO_SITE_URL=1.
+  if (
+    process.env.REDIRECT_TO_SITE_URL === "1" &&
+    request.nextUrl.hostname.endsWith(".vercel.app") &&
+    !request.nextUrl.pathname.startsWith("/api/") &&
+    !isTrustedProxy(request.headers)
+  ) {
+    return NextResponse.redirect(new URL(request.nextUrl.pathname + request.nextUrl.search, siteUrl), 308);
+  }
+
   // Ішкі маршрутқа тікелей кіруге болмайды (қайталанатын мазмұн болмасын)
   if (request.nextUrl.pathname.startsWith(LANDING_PATH)) {
     const url = request.nextUrl.clone();

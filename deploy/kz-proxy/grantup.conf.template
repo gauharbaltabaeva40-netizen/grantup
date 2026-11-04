@@ -1,0 +1,65 @@
+# grantup.kz → Vercel (${UPSTREAM}) прокси. setup.sh осы шаблоннан /etc/nginx/sites-available/grantup.conf жасайды.
+# .kz доменінің талабы: домен Қазақстандағы сервердің IP-іне бағытталуы керек — бұл сервер сол.
+
+# HTTP → HTTPS (Let's Encrypt тексеруінен басқасы)
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN} www.${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://${DOMAIN}$request_uri;
+    }
+}
+
+# www → негізгі домен
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name www.${DOMAIN};
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    return 301 https://${DOMAIN}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+
+    # Server Action арқылы сурет жүктеу (≤ 3 МБ) + прокторинг фотолары
+    client_max_body_size 5m;
+
+    location / {
+        proxy_pass https://${UPSTREAM};
+        proxy_http_version 1.1;
+        proxy_ssl_server_name on;
+        proxy_ssl_name ${UPSTREAM};
+        proxy_set_header Host ${UPSTREAM};
+        proxy_set_header Connection "";
+
+        # Қолданба оқушының нақты IP-ін осыдан алады (құпия кілт сәйкес келсе ғана)
+        proxy_set_header X-GU-Client-IP $remote_addr;
+        proxy_set_header X-GU-Proxy-Secret "${PROXY_SECRET}";
+        proxy_set_header X-Forwarded-Proto https;
+
+        # Vercel редиректтері мен cookie-лері grantup.kz-ке қайта жазылады
+        proxy_redirect https://${UPSTREAM}/ https://${DOMAIN}/;
+        proxy_cookie_domain ${UPSTREAM} ${DOMAIN};
+
+        # Ағынмен берілетін жауаптар (беттер, AI жоспар) кідірмесін
+        proxy_buffering off;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
