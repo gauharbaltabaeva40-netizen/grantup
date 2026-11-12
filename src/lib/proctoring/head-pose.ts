@@ -30,3 +30,29 @@ export function isTurnedAway(yaw: number | null, baseline: number | null, thresh
   if (yaw === null || baseline === null) return false;
   return Math.abs(yaw - baseline) > threshold;
 }
+
+/**
+ * Face Landmarker-дің 4×4 түрлендіру матрицасынан (бағаналар бойынша) бастың көлденең бұрышы, градуспен.
+ * Тура қарағанда ≈ 0; оңға/солға бұрылғанда таңбасы әр түрлі.
+ */
+export function yawFromMatrix(data: ArrayLike<number> | undefined): number | null {
+  if (!data || data.length < 16) return null;
+  return (Math.atan2(-data[2], Math.hypot(data[6], data[10])) * 180) / Math.PI;
+}
+
+/** Көздің жанына қарау көрсеткіші (0..1): көздердің ішке/сыртқа қарау blendshape-терінің ең үлкені */
+export function sideGaze(blendshapes: ReadonlyArray<{ categoryName: string; score: number }> | undefined): number {
+  if (!blendshapes) return 0;
+  const sides = new Set(["eyeLookInLeft", "eyeLookOutLeft", "eyeLookInRight", "eyeLookOutRight"]);
+  return blendshapes.reduce((max, c) => (sides.has(c.categoryName) ? Math.max(max, c.score) : max), 0);
+}
+
+/** Бас бұрышы «тура» қалыптан шектен көп ауытқыды ма немесе көз жанына қарап тұр ма */
+export function isLookingAway(
+  pose: { yaw: number; gaze: number },
+  baselineYaw: number | null,
+  limits: { yawDeg: number; gaze: number },
+): boolean {
+  if (baselineYaw === null) return false;
+  return Math.abs(pose.yaw - baselineYaw) > limits.yawDeg || pose.gaze > limits.gaze;
+}

@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { logProctoringEvent, uploadProctoringSnapshot } from "@/lib/proctoring/actions";
 import {
   LOOK_AWAY_AFTER_MS,
-  LOOK_AWAY_YAW,
+  LOOK_AWAY_GAZE,
+  LOOK_AWAY_YAW_DEG,
+  LOOK_AWAY_YAW_FALLBACK,
   MULTIPLE_FACES_AFTER_MS,
   NO_FACE_AFTER_MS,
   PHONE_CHECK_INTERVAL_MS,
@@ -29,7 +31,7 @@ import {
   SNAPSHOT_WIDTH,
   VIOLATION_COOLDOWN_MS,
 } from "@/lib/proctoring/constants";
-import { headYaw, isTurnedAway, median } from "@/lib/proctoring/head-pose";
+import { headYaw, isLookingAway, isTurnedAway, median, sideGaze, yawFromMatrix } from "@/lib/proctoring/head-pose";
 import type { ProctoringEventType } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -41,9 +43,15 @@ type Frame = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
 type FaceSample = { count: number; yaw: number | null };
 type Detector = { sample: (frame: Frame) => FaceSample; close: () => void };
 type PhoneDetector = { score: (frame: Frame) => number; close: () => void };
+/** Бас бұрышы (градус) және көздің жанына қарауы (0..1) */
+type Pose = { yaw: number; gaze: number };
+type Landmarker = { pose: (frame: Frame) => Pose | null; close: () => void };
 
 let detectorPromise: Promise<Detector | null> | null = null;
 let phoneDetectorPromise: Promise<PhoneDetector | null> | null = null;
+let landmarkerPromise: Promise<Landmarker | null> | null = null;
+/** Жүктеліп болған Face Landmarker (секунд сайынғы циклде күтпеу үшін) */
+let landmarkerReady: Landmarker | null = null;
 
 /** detectForVideo уақыт белгісі әр детектор үшін қатаң өсуі керек */
 function monotonicClock() {
@@ -90,7 +98,7 @@ export function loadPhoneDetector(): Promise<PhoneDetector | null> {
       const { ObjectDetector, FilesetResolver } = await import("@mediapipe/tasks-vision");
       const vision = await FilesetResolver.forVisionTasks("/mediapipe");
       const detector = await ObjectDetector.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: "/models/efficientdet_lite0.tflite", delegate: "CPU" },
+        baseOptions: { modelAssetPath: "/models/efficientdet_lite0_f16.tflite", delegate: "CPU" },
         runningMode: "VIDEO",
         categoryAllowlist: ["cell phone"],
         scoreThreshold: 0.3,
@@ -134,6 +142,42 @@ async function captureJpeg(video: HTMLVideoElement): Promise<Blob | null> {
   return null;
 }
 
+/**
+ * Face Landmarker: бастың нақты бұрышы (түрлендіру матрицасынан) және көз қарашығының бағыты (blendshapes).
+ * Нақты кадрларда: тура — 10° / 0,21; сәл бұрылып жанына қарау — 30° / 0,68; қатты бұрылу — 51°.
+ */
+export function loadLandmarker(): Promise<Landmarker | null> {
+  landmarkerPromise ??= (async () => {
+    try {
+      const { FaceLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
+      const vision = await FilesetResolver.forVisionTasks("/mediapipe");
+      const landmarker = await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: "/models/face_landmarker.task", delegate: "CPU" },
+        runningMode: "VIDEO",
+        numFaces: 1,
+        outputFaceBlendshapes: true,
+        outputFacialTransformationMatrixes: true,
+      });
+      const clock = monotonicClock();
+      const ready: Landmarker = {
+        pose: (frame) => {
+          const result = landmarker.detectForVideo(frame, clock());
+          const yaw = yawFromMatrix(result.facialTransformationMatrixes?.[0]?.data);
+          return yaw === null ? null : { yaw, gaze: sideGaze(result.faceBlendshapes?.[0]?.categories) };
+        },
+        close: () => landmarker.close(),
+      };
+      landmarkerReady = ready;
+      return ready;
+    } catch (error) {
+      console.error("face landmarker unavailable", error);
+      landmarkerPromise = null;
+      return null;
+    }
+  })();
+  return landmarkerPromise;
+}
+
 type FaceState = "loading" | "ok" | "none" | "many" | "unavailable";
 /** Басты бұру: unknown — әлі «тура» қалып анықталмады немесе бет жоқ */
 type LookState = "unknown" | "ok" | "away";
@@ -147,9 +191,10 @@ function useCameraWatch(active: boolean) {
   const [face, setFace] = useState<FaceState>("loading");
   const [look, setLook] = useState<LookState>("unknown");
   const [detectorReady, setDetectorReady] = useState<boolean | null>(null);
-  // Оқушының өз «тура» қалпы: алғашқы өлшемдердің медианасы (камера әр түрлі бұрышта тұруы мүмкін)
-  const calibration = useRef<number[]>([]);
-  const baseline = useRef<number | null>(null);
+  // Оқушының өз «тура» қалпы: алғашқы өлшемдердің медианасы (камера әр түрлі бұрышта тұруы мүмкін).
+  // Face Landmarker (градус) мен қосалқы әдістің (бет нүктелері) өлшемдері бөлек жиналады.
+  const calibration = useRef<{ deg: number[]; rough: number[] }>({ deg: [], rough: [] });
+  const baseline = useRef<{ deg: number | null; rough: number | null }>({ deg: null, rough: null });
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -180,6 +225,7 @@ function useCameraWatch(active: boolean) {
     if (!active) return;
     let cancelled = false;
     void loadDetector().then((d) => !cancelled && setDetectorReady(Boolean(d)));
+    void loadLandmarker();
     return () => {
       cancelled = true;
     };
@@ -198,13 +244,23 @@ function useCameraWatch(active: boolean) {
       try {
         const { count, yaw } = detector.sample(video);
         setFace(count === 0 ? "none" : count > 1 ? "many" : "ok");
-        if (yaw === null) {
+        if (count !== 1) {
           setLook("unknown");
-        } else if (baseline.current === null) {
-          calibration.current.push(yaw);
-          if (calibration.current.length >= POSE_CALIBRATION_SAMPLES) baseline.current = median(calibration.current);
+          return;
+        }
+        // Негізгі әдіс — Face Landmarker; ол жүктелмесе — бет нүктелерімен шамалап
+        const pose = landmarkerReady?.pose(video) ?? null;
+        const mode = pose ? "deg" : "rough";
+        const value = pose ? pose.yaw : yaw;
+        if (value === null) {
+          setLook("unknown");
+        } else if (baseline.current[mode] === null) {
+          calibration.current[mode].push(value);
+          if (calibration.current[mode].length >= POSE_CALIBRATION_SAMPLES) baseline.current[mode] = median(calibration.current[mode]);
+        } else if (pose) {
+          setLook(isLookingAway(pose, baseline.current.deg, { yawDeg: LOOK_AWAY_YAW_DEG, gaze: LOOK_AWAY_GAZE }) ? "away" : "ok");
         } else {
-          setLook(isTurnedAway(yaw, baseline.current, LOOK_AWAY_YAW) ? "away" : "ok");
+          setLook(isTurnedAway(value, baseline.current.rough, LOOK_AWAY_YAW_FALLBACK) ? "away" : "ok");
         }
       } catch {
         setFace("unavailable");
