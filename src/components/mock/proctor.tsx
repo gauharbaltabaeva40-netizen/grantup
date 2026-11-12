@@ -4,7 +4,8 @@
  * Сынақ ҰБТ прокторингі (камера).
  * - Бет анықтау браузердің өзінде (MediaPipe, WASM) — видео серверге ағынмен жіберілмейді.
  * - Серверге тек: келісім фотосы, 3 минут сайынғы фото, бұзушылық сәтіндегі фото және оқиғалар журналы.
- * - Бұзушылық (бет жоқ, бірнеше адам, камера өшті, басқа бетке ауысу) тек тіркеледі — сынақ тоқтатылмайды.
+ * - Бұзушылық (бет жоқ, бірнеше адам, телефон, басты жанына бұру, камера өшті, басқа бетке ауысу)
+ *   тек тіркеледі — сынақ тоқтатылмайды.
  * - Әр оқиғамен бірге сол сәттегі сұрақ нөмірі жазылады.
  */
 
@@ -14,14 +15,21 @@ import { Camera, CameraOff, Loader2, ScanFace, ShieldCheck, TriangleAlert } from
 import { Button } from "@/components/ui/button";
 import { logProctoringEvent, uploadProctoringSnapshot } from "@/lib/proctoring/actions";
 import {
+  LOOK_AWAY_AFTER_MS,
+  LOOK_AWAY_YAW,
   MULTIPLE_FACES_AFTER_MS,
   NO_FACE_AFTER_MS,
+  PHONE_CHECK_INTERVAL_MS,
+  PHONE_CONFIRM_HITS,
+  PHONE_MIN_SCORE,
+  POSE_CALIBRATION_SAMPLES,
   PROCTORING_RETENTION_DAYS,
   SNAPSHOT_INTERVAL_MS,
   SNAPSHOT_MAX_BYTES,
   SNAPSHOT_WIDTH,
   VIOLATION_COOLDOWN_MS,
 } from "@/lib/proctoring/constants";
+import { headYaw, isTurnedAway, median } from "@/lib/proctoring/head-pose";
 import type { ProctoringEventType } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
@@ -29,12 +37,25 @@ import { cn } from "@/lib/utils";
 // Бет анықтау (бір рет жүктеледі, беттер арасында ортақ)
 // ---------------------------------------------------------------------
 
-type Detector = { count: (video: HTMLVideoElement) => number; close: () => void };
+type Frame = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement;
+type FaceSample = { count: number; yaw: number | null };
+type Detector = { sample: (frame: Frame) => FaceSample; close: () => void };
+type PhoneDetector = { score: (frame: Frame) => number; close: () => void };
 
 let detectorPromise: Promise<Detector | null> | null = null;
+let phoneDetectorPromise: Promise<PhoneDetector | null> | null = null;
+
+/** detectForVideo уақыт белгісі әр детектор үшін қатаң өсуі керек */
+function monotonicClock() {
+  let last = 0;
+  return () => {
+    last = Math.max(performance.now(), last + 1);
+    return last;
+  };
+}
 
 /** MediaPipe бет детекторы. Жүктелмесе (ескі құрылғы) — null, прокторинг тек фотомен жалғасады. */
-function loadDetector(): Promise<Detector | null> {
+export function loadDetector(): Promise<Detector | null> {
   detectorPromise ??= (async () => {
     try {
       const { FaceDetector, FilesetResolver } = await import("@mediapipe/tasks-vision");
@@ -44,13 +65,12 @@ function loadDetector(): Promise<Detector | null> {
         runningMode: "VIDEO",
         minDetectionConfidence: 0.6,
       });
-      let last = 0;
+      const clock = monotonicClock();
       return {
-        count: (video) => {
-          // detectForVideo уақыт белгісі қатаң өсуі керек
-          const now = Math.max(performance.now(), last + 1);
-          last = now;
-          return detector.detectForVideo(video, now).detections.length;
+        sample: (frame) => {
+          const { detections } = detector.detectForVideo(frame, clock());
+          // Басты бұру тек бір бет болғанда бағаланады
+          return { count: detections.length, yaw: detections.length === 1 ? headYaw(detections[0].keypoints) : null };
         },
         close: () => detector.close(),
       };
@@ -61,6 +81,33 @@ function loadDetector(): Promise<Detector | null> {
     }
   })();
   return detectorPromise;
+}
+
+/** Телефон детекторы (EfficientDet-Lite0, COCO «cell phone»). Жүктелмесе — null, қалған прокторинг жұмыс істей береді. */
+export function loadPhoneDetector(): Promise<PhoneDetector | null> {
+  phoneDetectorPromise ??= (async () => {
+    try {
+      const { ObjectDetector, FilesetResolver } = await import("@mediapipe/tasks-vision");
+      const vision = await FilesetResolver.forVisionTasks("/mediapipe");
+      const detector = await ObjectDetector.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: "/models/efficientdet_lite0.tflite", delegate: "CPU" },
+        runningMode: "VIDEO",
+        categoryAllowlist: ["cell phone"],
+        scoreThreshold: 0.3,
+        maxResults: 1,
+      });
+      const clock = monotonicClock();
+      return {
+        score: (frame) => detector.detectForVideo(frame, clock()).detections[0]?.categories[0]?.score ?? 0,
+        close: () => detector.close(),
+      };
+    } catch (error) {
+      console.error("phone detector unavailable", error);
+      phoneDetectorPromise = null;
+      return null;
+    }
+  })();
+  return phoneDetectorPromise;
 }
 
 type CameraError = "denied" | "unsupported";
@@ -88,15 +135,21 @@ async function captureJpeg(video: HTMLVideoElement): Promise<Blob | null> {
 }
 
 type FaceState = "loading" | "ok" | "none" | "many" | "unavailable";
+/** Басты бұру: unknown — әлі «тура» қалып анықталмады немесе бет жоқ */
+type LookState = "unknown" | "ok" | "away";
 
-/** Камера + бет санын тұрақты бақылау (1 секунд сайын) */
+/** Камера + бет саны мен басты бұруды тұрақты бақылау (1 секунд сайын) */
 function useCameraWatch(active: boolean) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [status, setStatus] = useState<"idle" | "starting" | "on" | "off">("idle");
   const [error, setError] = useState<CameraError | null>(null);
   const [face, setFace] = useState<FaceState>("loading");
+  const [look, setLook] = useState<LookState>("unknown");
   const [detectorReady, setDetectorReady] = useState<boolean | null>(null);
+  // Оқушының өз «тура» қалпы: алғашқы өлшемдердің медианасы (камера әр түрлі бұрышта тұруы мүмкін)
+  const calibration = useRef<number[]>([]);
+  const baseline = useRef<number | null>(null);
 
   const stop = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -143,8 +196,16 @@ function useCameraWatch(active: boolean) {
       const detector = await loadDetector();
       if (!video || !detector || video.readyState < 2) return;
       try {
-        const n = detector.count(video);
-        setFace(n === 0 ? "none" : n > 1 ? "many" : "ok");
+        const { count, yaw } = detector.sample(video);
+        setFace(count === 0 ? "none" : count > 1 ? "many" : "ok");
+        if (yaw === null) {
+          setLook("unknown");
+        } else if (baseline.current === null) {
+          calibration.current.push(yaw);
+          if (calibration.current.length >= POSE_CALIBRATION_SAMPLES) baseline.current = median(calibration.current);
+        } else {
+          setLook(isTurnedAway(yaw, baseline.current, LOOK_AWAY_YAW) ? "away" : "ok");
+        }
       } catch {
         setFace("unavailable");
       }
@@ -163,7 +224,7 @@ function useCameraWatch(active: boolean) {
 
   useEffect(() => stop, [stop]);
 
-  return { videoRef, status, error, face, start, stop };
+  return { videoRef, status, error, face, look, start, stop };
 }
 
 function CameraPreview({ videoRef, className }: { videoRef: React.RefObject<HTMLVideoElement | null>; className?: string }) {
@@ -266,7 +327,9 @@ export function CameraCheck({ onReady, onCancel, pending }: { onReady: () => voi
 
 export function ExamProctor({ attemptId, questionNo }: { attemptId: string; questionNo: number }) {
   const t = useTranslations("mockExam.proctor");
-  const { videoRef, status, error, face, start } = useCameraWatch(true);
+  const { videoRef, status, error, face, look, start } = useCameraWatch(true);
+  const [phone, setPhone] = useState(false);
+  const lookSince = useRef<{ state: LookState; since: number }>({ state: "unknown", since: Date.now() });
   const questionRef = useRef(questionNo);
   questionRef.current = questionNo;
   const offSince = useRef<number | null>(null);
@@ -289,7 +352,7 @@ export function ExamProctor({ attemptId, questionNo }: { attemptId: string; ques
   );
 
   const snapshot = useCallback(
-    async (reason: "consent" | "snapshot" | "no_face" | "multiple_faces") => {
+    async (reason: "consent" | "snapshot" | "no_face" | "multiple_faces" | "phone_detected" | "looking_away") => {
       const question = questionRef.current;
       const video = videoRef.current;
       const blob = video ? await captureJpeg(video) : null;
@@ -359,6 +422,47 @@ export function ExamProctor({ attemptId, questionNo }: { attemptId: string; ques
     return () => clearInterval(check);
   }, [face, cooledDown, snapshot]);
 
+  // Басты жанына ұзақ бұру (төмен қарау есептелмейді — жоба қағазына жазу қалыпты)
+  useEffect(() => {
+    if (lookSince.current.state !== look) lookSince.current = { state: look, since: Date.now() };
+    if (look !== "away") return;
+    const check = setInterval(() => {
+      if (lookSince.current.state === "away" && Date.now() - lookSince.current.since >= LOOK_AWAY_AFTER_MS && cooledDown("looking_away")) {
+        void snapshot("looking_away");
+      }
+    }, 1000);
+    return () => clearInterval(check);
+  }, [look, cooledDown, snapshot]);
+
+  // Телефон: модель кешіккен соң жүктеледі; қатарынан бірнеше рет көрінсе ғана тіркеледі (жалған дабылды азайту)
+  useEffect(() => {
+    if (status !== "on") return;
+    let cancelled = false;
+    let hits = 0;
+    let busy = false;
+    const id = setInterval(async () => {
+      const video = videoRef.current;
+      if (busy || document.hidden || !video || video.readyState < 2) return;
+      busy = true;
+      try {
+        const detector = await loadPhoneDetector();
+        if (cancelled || !detector) return;
+        const found = detector.score(video) >= PHONE_MIN_SCORE;
+        hits = found ? hits + 1 : 0;
+        setPhone(hits >= PHONE_CONFIRM_HITS);
+        if (hits >= PHONE_CONFIRM_HITS && cooledDown("phone_detected")) void snapshot("phone_detected");
+      } catch {
+        // Детектор қатесі сынаққа әсер етпеуі керек
+      } finally {
+        busy = false;
+      }
+    }, PHONE_CHECK_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [status, videoRef, cooledDown, snapshot]);
+
   // Кезекті фото
   useEffect(() => {
     if (status !== "on") return;
@@ -375,7 +479,9 @@ export function ExamProctor({ attemptId, questionNo }: { attemptId: string; ques
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [cooledDown, log]);
 
-  const warn = status !== "on" || face === "none" || face === "many";
+  const warn = status !== "on" || face === "none" || face === "many" || phone || look === "away";
+  const alert =
+    face === "none" ? t("noFace") : face === "many" ? t("multipleFaces") : phone ? t("phoneDetected") : look === "away" ? t("lookAtScreen") : null;
 
   return (
     <div className="fixed bottom-24 left-3 z-40 flex max-w-[calc(100vw-1.5rem)] items-end gap-2 lg:bottom-4" aria-label={t("label")}>
@@ -395,9 +501,9 @@ export function ExamProctor({ attemptId, questionNo }: { attemptId: string; ques
           </Button>
         </div>
       ) : (
-        (face === "none" || face === "many") && (
-          <p className="rounded-xl bg-card px-2.5 py-1.5 text-xs font-semibold text-danger shadow-lg">
-            {face === "none" ? t("noFace") : t("multipleFaces")}
+        alert && (
+          <p className="rounded-xl bg-card px-2.5 py-1.5 text-xs font-semibold text-danger shadow-lg" role="status">
+            {alert}
           </p>
         )
       )}

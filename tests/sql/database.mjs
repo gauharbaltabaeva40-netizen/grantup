@@ -643,5 +643,16 @@ await check("password reset: student cannot clear must_change_password; revoke f
   await q(`update profiles set must_change_password = false where id = $1`, [s1.id]);
 });
 
+await check("proctoring: phone and looking-away events counted", async () => {
+  const [u] = await q(`insert into auth.users (email) values ('proctor2@test.kz') returning id`);
+  const [m] = await q(`select id from mock_exams limit 1`);
+  const [a] = await q(`insert into attempts (user_id, kind, locale, mock_exam_id) values ($1, 'mock', 'kk', $2) returning id`, [u.id, m.id]);
+  for (const type of ["phone_detected", "phone_detected", "looking_away"]) {
+    await q(`insert into proctoring_events (attempt_id, user_id, type, question_no) values ($1, $2, $3, 5)`, [a.id, u.id, type]);
+  }
+  const [r] = await q(`select phone_detected::int, looking_away::int from admin_proctoring_attempts(10, 0, $1)`, [u.id]);
+  assert(r.phone_detected === 2 && r.looking_away === 1, JSON.stringify(r));
+});
+
 console.log(failures ? `\n${failures} FAILED` : "\nall passed");
 process.exit(failures ? 1 : 0);

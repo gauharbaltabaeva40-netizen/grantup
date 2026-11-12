@@ -15,6 +15,8 @@ const EVENT: Record<ProctoringEventType, { label: string; tone: "destructive" | 
   snapshot: { label: "Кезекті фото", tone: "outline" },
   no_face: { label: "Бет көрінбейді", tone: "destructive" },
   multiple_faces: { label: "Бірнеше адам", tone: "destructive" },
+  phone_detected: { label: "Телефон", tone: "destructive" },
+  looking_away: { label: "Басын жанына бұрды", tone: "secondary" },
   camera_off: { label: "Камера өшті", tone: "secondary" },
   camera_on: { label: "Камера қайта қосылды", tone: "outline" },
   tab_hidden: { label: "Басқа бетке ауысты", tone: "secondary" },
@@ -78,9 +80,11 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat label="Бет көрінбеді" value={count("no_face")} tone={count("no_face") ? "warn" : undefined} />
         <Stat label="Бірнеше адам" value={count("multiple_faces")} tone={count("multiple_faces") ? "warn" : undefined} />
+        <Stat label="Телефон" value={count("phone_detected")} tone={count("phone_detected") ? "warn" : undefined} />
+        <Stat label="Басын бұрды" value={count("looking_away")} tone={count("looking_away") ? "warn" : undefined} />
         <Stat label="Басқа бетке ауысу" value={count("tab_hidden")} tone={count("tab_hidden") ? "warn" : undefined} />
         <Stat label="Камера өшті" value={count("camera_off")} tone={count("camera_off") ? "warn" : undefined} />
       </div>

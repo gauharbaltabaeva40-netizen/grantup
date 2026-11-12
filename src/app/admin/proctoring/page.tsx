@@ -42,7 +42,8 @@ export default async function AdminProctoringPage({ searchParams }: { searchPara
           <ul className="divide-y">
             {list.map((r) => {
               const p = profiles.find((x) => x.id === r.user_id);
-              const violations = Number(r.no_face) + Number(r.multiple_faces) + Number(r.camera_off) + Number(r.tab_hidden);
+              const violations =
+                Number(r.no_face) + Number(r.multiple_faces) + Number(r.phone_detected) + Number(r.looking_away) + Number(r.camera_off) + Number(r.tab_hidden);
               return (
                 <li key={r.attempt_id}>
                   <Link href={`/admin/proctoring/${r.attempt_id}`} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3 hover:text-primary">
@@ -56,6 +57,8 @@ export default async function AdminProctoringPage({ searchParams }: { searchPara
                       {violations === 0 && <Badge variant="outline">Бұзушылық жоқ</Badge>}
                       {Number(r.no_face) > 0 && <Badge variant="destructive">Бет жоқ: {Number(r.no_face)}</Badge>}
                       {Number(r.multiple_faces) > 0 && <Badge variant="destructive">Бірнеше адам: {Number(r.multiple_faces)}</Badge>}
+                      {Number(r.phone_detected) > 0 && <Badge variant="destructive">Телефон: {Number(r.phone_detected)}</Badge>}
+                      {Number(r.looking_away) > 0 && <Badge variant="secondary">Басын бұрды: {Number(r.looking_away)}</Badge>}
                       {Number(r.tab_hidden) > 0 && <Badge variant="secondary">Басқа бет: {Number(r.tab_hidden)}</Badge>}
                       {Number(r.camera_off) > 0 && <Badge variant="secondary">Камера өшті: {Number(r.camera_off)}</Badge>}
                     </span>

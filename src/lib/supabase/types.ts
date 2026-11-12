@@ -390,6 +390,8 @@ export type ProctoringEventType =
   | "snapshot"
   | "no_face"
   | "multiple_faces"
+  | "phone_detected"
+  | "looking_away"
   | "camera_off"
   | "camera_on"
   | "tab_hidden"
@@ -494,6 +496,8 @@ export type Database = {
           status: AttemptStatus;
           no_face: number;
           multiple_faces: number;
+          phone_detected: number;
+          looking_away: number;
           camera_off: number;
           tab_hidden: number;
           snapshots: number;

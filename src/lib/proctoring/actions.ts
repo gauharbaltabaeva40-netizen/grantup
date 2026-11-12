@@ -11,8 +11,19 @@ import type { ProctoringEventType } from "@/lib/supabase/types";
 import { SNAPSHOT_MAX_BYTES } from "./constants";
 
 const BUCKET = "proctoring";
-const EVENT_TYPES = ["consent", "snapshot", "no_face", "multiple_faces", "camera_off", "camera_on", "tab_hidden", "detector_unavailable"] as const;
-const IMAGE_TYPES = ["consent", "snapshot", "no_face", "multiple_faces"] as const;
+const EVENT_TYPES = [
+  "consent",
+  "snapshot",
+  "no_face",
+  "multiple_faces",
+  "phone_detected",
+  "looking_away",
+  "camera_off",
+  "camera_on",
+  "tab_hidden",
+  "detector_unavailable",
+] as const;
+const IMAGE_TYPES = ["consent", "snapshot", "no_face", "multiple_faces", "phone_detected", "looking_away"] as const;
 
 /** Пайдаланушының жүріп жатқан сынақ ҰБТ-сы ма */
 async function isOwnActiveMock(attemptId: string, userId: string) {
