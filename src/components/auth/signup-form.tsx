@@ -70,6 +70,20 @@ export function SignupForm() {
       </div>
 
       <SubmitButton>{t("submitSignup")}</SubmitButton>
+      <p className="text-center text-xs leading-relaxed text-muted-foreground">
+        {t.rich("agree", {
+          terms: (chunks) => (
+            <Link href={locale === "ru" ? "/ru/terms" : "/terms"} target="_blank" className="font-semibold text-primary hover:underline">
+              {chunks}
+            </Link>
+          ),
+          privacy: (chunks) => (
+            <Link href={locale === "ru" ? "/ru/privacy" : "/privacy"} target="_blank" className="font-semibold text-primary hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
 
       <p className="text-center text-sm text-muted-foreground">
         {t("haveAccount")}{" "}

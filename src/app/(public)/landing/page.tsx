@@ -18,6 +18,7 @@ import {
   Trophy,
   Video,
 } from "lucide-react";
+import { PublicFooter } from "@/components/public/public-shell";
 import { localeLabels, locales, type Locale } from "@/i18n/config";
 import { siteUrl } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -438,13 +439,7 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row lg:px-8">
-          <span className="font-extrabold text-foreground">GrantUp.kz</span>
-          <span>{t("footer")}</span>
-          <span className="sm:ml-auto">© {new Date().getFullYear()}</span>
-        </div>
-      </footer>
+      <PublicFooter locale={locale} />
     </div>
   );
 }

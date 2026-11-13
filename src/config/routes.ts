@@ -6,6 +6,9 @@ export const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/check-ema
 /** Кірусіз де, кірген күйде де ашылатын беттер. */
 export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest", "/api/cron", "/verify"];
 
+/** Ашық ақпарат беттері: тіл URL-дан («/ru/…» — орысша), кіру қажет емес, іздеу жүйелері индекстейді */
+export const PUBLIC_INFO_PAGES = ["/ubt-2026", "/privacy", "/terms"];
+
 /** Ашық басты беттің ішкі маршруты: «/» және «/ru» осыған rewrite жасалады. */
 export const LANDING_PATH = "/landing";
 /** Лендинг тілі (middleware қояды, i18n/request.ts оқиды) */

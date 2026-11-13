@@ -1,6 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { AUTH_ROUTES, DEVICE_ROUTE, LANDING_LOCALE_HEADER, LANDING_PATH, matchesRoute, PUBLIC_ROUTES } from "@/config/routes";
+import {
+  AUTH_ROUTES,
+  DEVICE_ROUTE,
+  LANDING_LOCALE_HEADER,
+  LANDING_PATH,
+  matchesRoute,
+  PUBLIC_INFO_PAGES,
+  PUBLIC_ROUTES,
+} from "@/config/routes";
 import { LOCALE_COOKIE, type Locale } from "@/i18n/config";
 import {
   DEVICE_COOKIE,
@@ -62,6 +70,23 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url, 308);
+  }
+
+  // Ашық ақпарат беттері (SEO): «/privacy» — қазақша, «/ru/privacy» — орысша. Кіру қажет емес, тіл cookie-і өзгермейді.
+  {
+    const { pathname } = request.nextUrl;
+    const ru = pathname.startsWith("/ru/");
+    const page = ru ? pathname.slice(3) : pathname;
+    if (PUBLIC_INFO_PAGES.includes(page)) {
+      request.headers.set(LANDING_LOCALE_HEADER, ru ? "ru" : "kk");
+      const url = request.nextUrl.clone();
+      url.pathname = page;
+      const res = ru
+        ? NextResponse.rewrite(url, { request: { headers: request.headers } })
+        : NextResponse.next({ request: { headers: request.headers } });
+      res.headers.set("content-security-policy", csp);
+      return res;
+    }
   }
 
   // Демо режим: Supabase кілттері жоқ — тексерусіз өткіземіз (тек әзірлеу үшін).

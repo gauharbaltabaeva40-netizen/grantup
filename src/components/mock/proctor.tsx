@@ -10,7 +10,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Camera, CameraOff, Loader2, ScanFace, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logProctoringEvent, uploadProctoringSnapshot } from "@/lib/proctoring/actions";
@@ -312,6 +312,7 @@ function FaceStatus({ face }: { face: FaceState }) {
 
 export function CameraCheck({ onReady, onCancel, pending }: { onReady: () => void; onCancel: () => void; pending: boolean }) {
   const t = useTranslations("mockExam.proctor");
+  const locale = useLocale();
   const [consent, setConsent] = useState(false);
   const { videoRef, status, error, face, start, stop } = useCameraWatch(true);
   // Детектор жоқ құрылғыда тек камера қосылуы жеткілікті
@@ -321,7 +322,14 @@ export function CameraCheck({ onReady, onCancel, pending }: { onReady: () => voi
     <div className="space-y-4">
       <p className="text-[15px] leading-relaxed">{t("checkText")}</p>
       <p className="rounded-xl bg-muted px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-        {t("privacy", { days: PROCTORING_RETENTION_DAYS })}
+        {t("privacy", { days: PROCTORING_RETENTION_DAYS })}{" "}
+        {t.rich("privacyLink", {
+          link: (chunks) => (
+            <a href={locale === "ru" ? "/ru/privacy" : "/privacy"} target="_blank" rel="noopener" className="font-semibold text-primary underline-offset-2 hover:underline">
+              {chunks}
+            </a>
+          ),
+        })}
       </p>
 
       <div className="relative overflow-hidden rounded-2xl border bg-black">

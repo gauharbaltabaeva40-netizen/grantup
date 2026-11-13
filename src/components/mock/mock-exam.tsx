@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -364,6 +365,16 @@ export function MockExam({ state }: { state: MockState }) {
 
   return (
     <div className="exam-backdrop min-h-dvh pb-28 lg:pb-10">
+      {/* Брендтік су белгісі: сертификаттағыдай өте үлкен әрі өте әлсіз логотип (басуға кедергі жасамайды) */}
+      <Image
+        src="/logo.png"
+        alt=""
+        width={720}
+        height={720}
+        aria-hidden
+        draggable={false}
+        className="pointer-events-none fixed top-1/2 left-1/2 z-20 w-[80vmin] max-w-[720px] -translate-x-1/2 -translate-y-1/2 opacity-[0.045] select-none dark:opacity-[0.06]"
+      />
       {/* Жоғарғы жолақ: мәзір, оқушы аты, таймер, келесі пән */}
       <header className="sticky top-0 z-30 bg-brand-gradient pt-[env(safe-area-inset-top)] text-white shadow-lg shadow-primary/20">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-2.5 px-4 sm:gap-3">
