@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, Flame, Lightbulb, RotateCcw, Snowflake, Swords, Target, Trophy } from "lucide-react";
+import { ArrowRight, Flame, Lightbulb, RotateCcw, Snowflake, Target, Trophy } from "lucide-react";
 import { ContinueButton } from "@/components/brand/continue-button";
 import { GradientCard } from "@/components/brand/gradient-card";
 import { ProgressRing } from "@/components/brand/progress-ring";
@@ -19,12 +19,11 @@ import { getViewer } from "@/lib/viewer";
 const cardClass = "rounded-2xl shadow-soft ring-0";
 
 export default async function HomePage() {
-  const [t, tc, tp, tl, td, locale, viewer] = await Promise.all([
+  const [t, tc, tp, tl, locale, viewer] = await Promise.all([
     getTranslations("home"),
     getTranslations("common"),
     getTranslations("plan"),
     getTranslations("leagueView"),
-    getTranslations("duel"),
     getLocale(),
     getViewer(),
   ]);
@@ -243,24 +242,6 @@ export default async function HomePage() {
             )}
           </CardContent>
         </Card>
-
-        {/* Дуэль: досыңмен немесе кездейсоқ қарсыласпен 5 сұрақ */}
-        <Link
-          href="/duel"
-          className="hover-lift relative isolate flex items-center gap-4 overflow-hidden rounded-2xl bg-[#0b1026] p-5 text-white shadow-brand outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:col-span-2"
-        >
-          <span aria-hidden className="pointer-events-none absolute -top-16 -right-10 -z-10 size-48 animate-[float_10s_ease-in-out_infinite] rounded-full bg-[#7b3ff2]/45 blur-3xl" />
-          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#fb923c] to-[#ef4444] shadow-lg">
-            <Swords className="size-6" aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-lg font-extrabold">{td("homeTitle")}</span>
-            <span className="block text-sm text-white/75">{td("homeText")}</span>
-          </span>
-          <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#0b1026] sm:inline-flex">
-            {td("homeCta")} <ArrowRight className="size-4" aria-hidden />
-          </span>
-        </Link>
       </FadeIn>
     </div>
   );

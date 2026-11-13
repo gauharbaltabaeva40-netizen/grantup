@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { IntegrityBadge } from "@/components/admin/integrity-badge";
+import { CertificateControls, DismissEventButton } from "@/components/admin/proctoring-controls";
 import { AdminHeader, Panel, Stat } from "@/components/admin/ui";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { adminPage, formatDateTime } from "@/lib/admin/server";
+import { getCertificate } from "@/lib/proctoring/certificate";
+import { CERT_MIN_INTEGRITY, INTEGRITY_PENALTY, integrityIndex } from "@/lib/proctoring/integrity";
 import { signedProctoringImages } from "@/lib/proctoring/server";
 import type { ProctoringEventType } from "@/lib/supabase/types";
 
@@ -36,15 +41,16 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
     .maybeSingle();
   if (!attempt) notFound();
 
-  const [{ data: profile }, { data: events }, { data: subjects }] = await Promise.all([
+  const [{ data: profile }, { data: events }, { data: subjects }, certificate] = await Promise.all([
     db.from("profiles").select("full_name, email").eq("id", attempt.user_id).maybeSingle(),
     db
       .from("proctoring_events")
-      .select("id, type, detail, image_path, question_no, created_at")
+      .select("id, type, detail, image_path, question_no, dismissed_at, created_at")
       .eq("attempt_id", attemptId)
       .order("created_at")
       .limit(1000),
     db.from("subjects").select("code, title_kk"),
+    getCertificate(attemptId),
   ]);
   const layout = (attempt.structure as { layout?: { subject: string; start: number; count: number }[] } | null)?.layout ?? [];
   const subjectTitle = new Map((subjects ?? []).map((s) => [s.code, s.title_kk]));
@@ -62,7 +68,10 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
   };
   const list = events ?? [];
   const images = await signedProctoringImages(list.map((e) => e.image_path).filter((p): p is string => Boolean(p)));
-  const count = (type: ProctoringEventType) => list.filter((e) => e.type === type).length;
+  // «Қате дабыл» деп белгіленгендер санға да, индекске де кірмейді
+  const count = (type: ProctoringEventType) => list.filter((e) => e.type === type && !e.dismissed_at).length;
+  const integrity = integrityIndex(list);
+  const finished = attempt.status === "finished" || attempt.status === "expired";
   const scaled = attempt.score != null && attempt.max_score ? Math.round((Number(attempt.score) / Number(attempt.max_score)) * 140) : null;
 
   return (
@@ -79,6 +88,34 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
           </Link>
         }
       />
+
+      <Panel title="Адалдық индексі және сертификат">
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <p className="text-4xl font-extrabold tabular-nums">{integrity ?? "—"}</p>
+            <IntegrityBadge index={integrity} className="mt-1" />
+          </div>
+          <p className="max-w-md flex-1 text-sm text-muted-foreground">
+            Индекс тек әкімшіге көрінеді. {CERT_MIN_INTEGRITY} және одан жоғары болса, оқушыға «Прокторингпен расталған нәтиже» сертификаты
+            автоматты беріледі; төмен болса — фотоларды тексеріп, өзіңіз шешесіз. «Қате дабыл» деп белгіленген оқиғалар есептелмейді.
+          </p>
+        </div>
+        <div className="mt-4 border-t pt-4">
+          <p className="mb-2 text-sm font-semibold">
+            Сертификат:{" "}
+            {certificate?.status === "valid"
+              ? `берілген (${certificate.issued_by ? "әкімші" : "автоматты"}), код ${certificate.code}`
+              : certificate?.status === "revoked"
+                ? "жойылған / берілмейді"
+                : finished
+                  ? integrity !== null && integrity >= CERT_MIN_INTEGRITY
+                    ? "оқушы ашқанда автоматты беріледі"
+                    : "берілмеген — тексеру керек"
+                  : "сынақ әлі аяқталмаған"}
+          </p>
+          {finished && <CertificateControls attemptId={attemptId} status={certificate?.status ?? null} code={certificate?.code ?? null} />}
+        </div>
+      </Panel>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat label="Бет көрінбеді" value={count("no_face")} tone={count("no_face") ? "warn" : undefined} />
@@ -116,11 +153,13 @@ export default async function AdminProctoringAttemptPage({ params }: { params: P
       <Panel title="Оқиғалар журналы">
         <ol className="divide-y text-sm">
           {list.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
+            <li key={e.id} className={cn("flex flex-wrap items-center gap-x-3 gap-y-1 py-2", e.dismissed_at && "opacity-50")}>
               <Badge variant={EVENT[e.type].tone}>{EVENT[e.type].label}</Badge>
+              {e.dismissed_at && <span className="text-xs font-semibold text-muted-foreground line-through">қате дабыл</span>}
               {whereIn(e.question_no) && <span className="font-semibold">{whereIn(e.question_no)}</span>}
               {e.type === "camera_on" && offFor(e.detail) && <span className="text-muted-foreground">({offFor(e.detail)})</span>}
               <span className="ml-auto tabular-nums text-muted-foreground">{formatDateTime(e.created_at)}</span>
+              {INTEGRITY_PENALTY[e.type] ? <DismissEventButton eventId={e.id} dismissed={Boolean(e.dismissed_at)} /> : null}
             </li>
           ))}
         </ol>

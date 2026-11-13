@@ -265,25 +265,6 @@ export type Attempt = {
   updated_at: string;
 };
 
-export type Duel = {
-  id: string;
-  code: string;
-  subject_id: number | null;
-  locale: AppLocale;
-  question_ids: string[];
-  option_order: Json;
-  creator_id: string;
-  opponent_id: string | null;
-  creator_attempt_id: string | null;
-  opponent_attempt_id: string | null;
-  is_open: boolean;
-  winner_id: string | null;
-  is_draw: boolean;
-  expires_at: string;
-  finished_at: string | null;
-  created_at: string;
-};
-
 export type AttemptAnswer = {
   attempt_id: string;
   question_id: string;
@@ -397,6 +378,22 @@ export type ProctoringEventType =
   | "tab_hidden"
   | "detector_unavailable";
 
+export type Certificate = {
+  id: string;
+  code: string;
+  attempt_id: string;
+  user_id: string;
+  student_name: string;
+  score: number;
+  max_score: number;
+  sections: { title: string; score: number; max: number }[];
+  exam_date: string;
+  issued_by: string | null;
+  status: "valid" | "revoked";
+  revoked_at: string | null;
+  created_at: string;
+};
+
 export type ProctoringEvent = {
   id: number;
   attempt_id: string;
@@ -406,6 +403,8 @@ export type ProctoringEvent = {
   image_path: string | null;
   question_no: number | null;
   created_at: string;
+  dismissed_at: string | null;
+  dismissed_by: string | null;
 };
 
 export type AppSetting = { key: string; value: Json; description: string | null; updated_at: string; updated_by: string | null };
@@ -457,7 +456,7 @@ export type Database = {
       push_subscriptions: Table<PushSubscription>;
       app_settings: Table<AppSetting>;
       notification_log: Table<NotificationLog>;
-      duels: Table<Duel, Pick<Duel, "code" | "locale" | "question_ids" | "creator_id"> & Partial<Duel>>;
+      certificates: Table<Certificate, Pick<Certificate, "code" | "attempt_id" | "user_id" | "student_name" | "score" | "max_score" | "exam_date"> & Partial<Certificate>>;
       proctoring_events: Table<ProctoringEvent, Pick<ProctoringEvent, "attempt_id" | "user_id" | "type"> & Partial<Omit<ProctoringEvent, "id">>>;
     };
     Views: Record<string, never>;

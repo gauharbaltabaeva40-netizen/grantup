@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
   ArrowRight,
+  BadgeCheck,
   CalendarCheck,
   Check,
   CircleCheck,
@@ -13,7 +14,6 @@ import {
   RotateCcw,
   ScanFace,
   Sparkles,
-  Swords,
   Target,
   Trophy,
   Video,
@@ -214,65 +214,42 @@ export default async function LandingPage() {
             <p className="mt-3 text-xs font-semibold tracking-wide text-white/40 uppercase">{t("heroNote")}</p>
           </div>
 
-          {/* Көрініс: дуэль + жүзіп тұрған белгілер */}
+          {/* Көрініс: тікелей прокторинг + жүзіп тұрған белгілер */}
           <div className="relative mx-auto w-full max-w-md py-8" aria-hidden>
             <div className="relative rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl backdrop-blur-xl sm:p-6">
               <div className="flex items-center justify-between text-xs font-bold text-white/60">
                 <span className="flex items-center gap-1.5">
-                  <Swords className="size-4 text-orange-300" /> {t("show.duelTitle")}
+                  <Video className="size-4 text-sky-300" /> {t("show.proctorTitle")}
                 </span>
                 <span className="flex items-center gap-1.5 rounded-full bg-red-500/20 px-2 py-0.5 text-red-200">
                   <span className="size-1.5 animate-pulse rounded-full bg-red-400" /> {t("show.live")}
                 </span>
               </div>
 
-              <div className="mt-5 flex items-center justify-between gap-3">
-                <div className="flex flex-col items-center gap-2">
-                  <span className="grid size-16 place-items-center rounded-full bg-white/10 text-3xl ring-2 ring-sky-300/70">🦊</span>
-                  <span className="text-sm font-extrabold">{t("show.you")}</span>
-                </div>
-                <div className="text-center">
-                  <p className="text-5xl font-extrabold tabular-nums">
-                    3<span className="mx-1 text-white/30">:</span>2
-                  </p>
-                  <p className="mt-1 text-xs font-semibold text-white/55">{t("show.q")}</p>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <span className="grid size-16 place-items-center rounded-full bg-white/10 text-3xl ring-2 ring-fuchsia-300/60">🐼</span>
-                  <span className="text-sm font-extrabold">{t("show.rival")}</span>
-                </div>
+              <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 [--scan-distance:13rem]">
+                <div className="absolute inset-[16%] rounded-[42%] border-2 border-dashed border-emerald-400/80" />
+                <ScanFace className="absolute top-1/2 left-1/2 size-20 -translate-x-1/2 -translate-y-1/2 text-white/80" />
+                <div className="absolute inset-x-4 top-4 h-px animate-[scan_4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-emerald-300 to-transparent shadow-[0_0_14px_3px_rgba(110,231,183,0.6)]" />
+                <span className="absolute top-3 left-3 rounded-full bg-black/40 px-2 py-0.5 text-[11px] font-bold text-white/80">{t("show.q")}</span>
               </div>
 
-              <div className="mt-5 flex gap-1.5">
-                {[true, true, false, null, null].map((m, i) => (
-                  <span key={i} className={cn("h-2 flex-1 rounded-full", m === true ? "bg-emerald-400" : m === false ? "bg-red-400" : i === 3 ? "animate-pulse bg-white" : "bg-white/15")} />
-                ))}
-              </div>
-
-              <div className="mt-5 space-y-2">
-                {["A", "B", "C"].map((letter, i) => (
-                  <div
-                    key={letter}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm",
-                      i === 1 ? "border-emerald-400/60 bg-emerald-400/15" : "border-white/10 bg-white/[0.04]",
-                    )}
-                  >
-                    <span className={cn("grid size-6 place-items-center rounded-full text-xs font-bold", i === 1 ? "bg-emerald-400 text-[#070b1a]" : "bg-white/10")}>
-                      {i === 1 ? <Check className="size-3.5" strokeWidth={3} /> : letter}
+              <ul className="mt-4 grid gap-2 text-sm font-semibold">
+                {([t("show.camera"), t("show.noPhone"), t("show.eyes")] as const).map((label) => (
+                  <li key={label} className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2">
+                    <span className="grid size-5 place-items-center rounded-full bg-emerald-400 text-[#070b1a]">
+                      <Check className="size-3.5" strokeWidth={3} />
                     </span>
-                    <span className={cn("h-2 rounded-full", i === 1 ? "w-28 bg-white/70" : "w-20 bg-white/25")} />
-                  </div>
+                    {label}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
             <FloatChip className="-top-1 -left-3 animate-[float_7s_ease-in-out_infinite] sm:-left-10">
               <Flame className="size-4 text-orange-300" /> {t("show.streak")}
             </FloatChip>
             <FloatChip className="-top-1 -right-3 animate-[float_9s_ease-in-out_infinite_reverse] sm:-right-10">
-              <ScanFace className="size-4 text-emerald-300" /> {t("show.camera")}
-              <Check className="size-3.5 text-emerald-300" strokeWidth={3} />
+              <BadgeCheck className="size-4 text-emerald-300" /> {t("show.cert")}
             </FloatChip>
             <FloatChip className="-bottom-2 left-1/2 -translate-x-1/2 animate-[float_8s_ease-in-out_infinite] whitespace-nowrap">
               <Trophy className="size-4 text-amber-300" /> {t("show.league")}
@@ -291,45 +268,36 @@ export default async function LandingPage() {
           </div>
 
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Дуэль — үлкен карта */}
+            {/* Прокторингпен расталған нәтиже — үлкен карта */}
             <article className="reveal hover-lift relative isolate flex flex-col overflow-hidden rounded-[1.75rem] bg-[#0b1026] p-6 text-white shadow-brand md:col-span-2">
               <div aria-hidden className="pointer-events-none absolute -top-24 -right-16 -z-10 size-72 animate-[float_11s_ease-in-out_infinite] rounded-full bg-[#7b3ff2]/45 blur-3xl" />
               <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 -z-10 size-64 rounded-full bg-[#0a84ff]/35 blur-3xl" />
               <div className="flex items-center gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#fb923c] to-[#ef4444] shadow-md">
-                  <Swords className="size-5" aria-hidden />
+                <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#22c55e] to-[#0e9f6e] shadow-md">
+                  <BadgeCheck className="size-5" aria-hidden />
                 </span>
-                <h3 className="text-xl font-extrabold tracking-tight">{t("f.duel.t")}</h3>
-                <span className="ml-auto hidden rounded-full bg-amber-300 px-2.5 py-1 text-xs font-extrabold text-[#0b1026] sm:inline">{t("f.duel.chip")}</span>
+                <h3 className="text-xl font-extrabold tracking-tight">{t("f.cert.t")}</h3>
+                <span className="ml-auto hidden rounded-full bg-emerald-300 px-2.5 py-1 text-xs font-extrabold text-[#0b1026] sm:inline">{t("f.cert.chip")}</span>
               </div>
-              <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">{t("f.duel.d")}</p>
+              <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">{t("f.cert.d")}</p>
               <div className="mt-auto pt-8" aria-hidden>
-                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-2xl bg-white/[0.06] p-5 ring-1 ring-white/10">
-                  {[
-                    { e: "🦊", n: t("show.you"), m: [true, true, false, true, true] },
-                    null,
-                    { e: "🐼", n: t("show.rival"), m: [true, false, true, false, true] },
-                  ].map((p, i) =>
-                    p ? (
-                      <div key={i} className={cn("flex flex-col gap-3", i === 2 && "items-end")}>
-                        <span className={cn("flex items-center gap-2 font-extrabold", i === 2 && "flex-row-reverse")}>
-                          <span className="grid size-10 place-items-center rounded-full bg-white/10 text-xl">{p.e}</span>
-                          {p.n}
-                        </span>
-                        <span className="flex gap-1">
-                          {p.m.map((ok, k) => (
-                            <span key={k} className={cn("grid size-6 place-items-center rounded-md", ok ? "bg-emerald-500/90" : "bg-red-500/80")}>
-                              {ok ? <Check className="size-3.5" strokeWidth={3} /> : <CircleX className="size-3.5" />}
-                            </span>
-                          ))}
-                        </span>
-                      </div>
-                    ) : (
-                      <span key={i} className="text-3xl font-extrabold tabular-nums">
-                        4<span className="mx-1 text-white/30">:</span>3
-                      </span>
-                    ),
-                  )}
+                <div className="relative flex items-center gap-5 overflow-hidden rounded-2xl bg-white p-5 text-[#0b1026] shadow-xl">
+                  {/* Сертификаттағыдай: үлкен әлсіз логотип */}
+                  <Image src="/logo.png" alt="" width={220} height={220} className="pointer-events-none absolute -right-10 -bottom-12 opacity-[0.06]" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold tracking-wide text-slate-500 uppercase">{t("f.cert.score")}</p>
+                    <p className="text-4xl font-extrabold tabular-nums">
+                      118<span className="text-xl text-slate-400">/140</span>
+                    </p>
+                    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                      <BadgeCheck className="size-3.5" /> {t("f.cert.verified")}
+                    </p>
+                  </div>
+                  <div className="grid size-20 shrink-0 grid-cols-5 gap-0.5 rounded-lg border-4 border-white bg-white p-1 shadow-inner ring-1 ring-slate-200">
+                    {Array.from({ length: 25 }, (_, k) => (
+                      <span key={k} className={cn("rounded-[1px]", [0, 1, 3, 4, 5, 7, 9, 12, 15, 17, 19, 20, 21, 23, 24].includes(k) ? "bg-[#0b1026]" : "bg-transparent")} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </article>

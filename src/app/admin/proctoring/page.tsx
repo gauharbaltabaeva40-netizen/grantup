@@ -2,7 +2,10 @@ import Link from "next/link";
 import { AdminHeader, Pager, Panel } from "@/components/admin/ui";
 import { Badge } from "@/components/ui/badge";
 import { adminPage, formatDateTime, pageParam, stringParam } from "@/lib/admin/server";
+import { IntegrityBadge } from "@/components/admin/integrity-badge";
 import { PROCTORING_RETENTION_DAYS } from "@/lib/proctoring/constants";
+import { integrityIndex } from "@/lib/proctoring/integrity";
+import type { ProctoringEventType } from "@/lib/supabase/types";
 
 export const metadata = { title: "Прокторинг" };
 export const dynamic = "force-dynamic";
@@ -23,12 +26,20 @@ export default async function AdminProctoringPage({ searchParams }: { searchPara
   const list = rows.slice(0, PAGE_SIZE);
   const ids = [...new Set(list.map((r) => r.user_id))];
   const profiles = db && ids.length ? ((await db.from("profiles").select("id, full_name, email").in("id", ids)).data ?? []) : [];
+  // Адалдық индексі: «қате дабыл» белгісін ескеру үшін оқиғалардан есептейміз
+  const attemptIds = list.map((r) => r.attempt_id);
+  const events =
+    db && attemptIds.length
+      ? ((await db.from("proctoring_events").select("attempt_id, type, dismissed_at").in("attempt_id", attemptIds).limit(20000)).data ?? [])
+      : [];
+  const indexOf = (attemptId: string) =>
+    integrityIndex(events.filter((e) => e.attempt_id === attemptId) as { type: ProctoringEventType; dismissed_at: string | null }[]);
 
   return (
     <>
       <AdminHeader
         title="Прокторинг"
-        description={`Сынақ ҰБТ камера бақылауы. Бұзушылықтар тек тіркеледі. Фотолар ${PROCTORING_RETENTION_DAYS} күннен кейін автоматты өшіріледі.`}
+        description={`Сынақ ҰБТ камера бақылауы. Бұзушылықтар тек тіркеледі. Адалдық индексі (0–100) тек әкімшіге көрінеді. Фотолар ${PROCTORING_RETENTION_DAYS} күннен кейін автоматты өшіріледі.`}
       />
       <Panel>
         {userId && (
@@ -53,7 +64,8 @@ export default async function AdminProctoringPage({ searchParams }: { searchPara
                         {formatDateTime(r.started_at)} · {statusLabel[r.status]} · {Number(r.snapshots)} фото
                       </span>
                     </span>
-                    <span className="flex flex-wrap gap-1">
+                    <span className="flex flex-wrap items-center gap-1">
+                      <IntegrityBadge index={indexOf(r.attempt_id)} />
                       {violations === 0 && <Badge variant="outline">Бұзушылық жоқ</Badge>}
                       {Number(r.no_face) > 0 && <Badge variant="destructive">Бет жоқ: {Number(r.no_face)}</Badge>}
                       {Number(r.multiple_faces) > 0 && <Badge variant="destructive">Бірнеше адам: {Number(r.multiple_faces)}</Badge>}

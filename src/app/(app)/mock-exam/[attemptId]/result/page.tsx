@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, ArrowRight, BookOpen, Clock, Grid3x3, LineChart, ListChecks, Target, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, BadgeCheck, BookOpen, Clock, Grid3x3, LineChart, ListChecks, Target, TriangleAlert } from "lucide-react";
 import { ProgressRing } from "@/components/brand/progress-ring";
 import { BarList, TopicHeatmap } from "@/components/mock/charts";
 import { HistoryChart } from "@/components/mock/history-chart";
@@ -32,11 +32,12 @@ function Card({ icon: Icon, title, children }: { icon: typeof Clock; title: stri
 export default async function MockResultPage({ params }: Params) {
   const { attemptId } = await params;
   const locale = await getLocale();
-  const [t, tm, format, data] = await Promise.all([
+  const [t, tm, format, data, tc] = await Promise.all([
     getTranslations("mockExam.result"),
     getTranslations("mockExam"),
     getFormatter(),
     getMockAnalytics(attemptId, locale),
+    getTranslations("certificate"),
   ]);
   if (!data) notFound();
 
@@ -80,6 +81,10 @@ export default async function MockResultPage({ params }: Params) {
           <Link href={`/mock-exam/${data.attemptId}/review`} className={cn(buttonVariants({ variant: "brand", size: "xl" }), "mt-2")}>
             <ListChecks aria-hidden />
             {t("review")}
+          </Link>
+          <Link href={`/mock-exam/${data.attemptId}/certificate`} className={cn(buttonVariants({ variant: "outline", size: "xl" }), "mt-2")}>
+            <BadgeCheck aria-hidden />
+            {tc("resultButton")}
           </Link>
         </div>
       </section>

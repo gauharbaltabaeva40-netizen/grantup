@@ -1,9 +1,9 @@
-import { BookOpen, CalendarDays, ClipboardCheck, House, ListChecks, RotateCcw, Swords, Trophy, UserRound, type LucideIcon } from "lucide-react";
+import { BookOpen, CalendarDays, ClipboardCheck, House, ListChecks, RotateCcw, Trophy, UserRound, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href: string;
   /** messages/*.json → nav.<labelKey> */
-  labelKey: "home" | "lessons" | "mockExam" | "league" | "profile" | "practice" | "mistakes" | "plan" | "duel";
+  labelKey: "home" | "lessons" | "mockExam" | "league" | "profile" | "practice" | "mistakes" | "plan";
   icon: LucideIcon;
   /** Бұл пункт белсенді болатын қосымша бөлімдер */
   also?: string[];
@@ -21,7 +21,6 @@ export const mainNav: NavItem[] = [
 // Тек компьютердегі бүйір мәзірде (телефонда — «Сабақтар» бетінен кіреді)
 export const secondaryNav: NavItem[] = [
   { href: "/plan", labelKey: "plan", icon: CalendarDays },
-  { href: "/duel", labelKey: "duel", icon: Swords },
   { href: "/practice", labelKey: "practice", icon: ListChecks },
   { href: "/practice/mistakes", labelKey: "mistakes", icon: RotateCcw },
 ];

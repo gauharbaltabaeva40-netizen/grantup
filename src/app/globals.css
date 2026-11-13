@@ -240,6 +240,31 @@
   body {
     display: none !important;
   }
+  /* Ерекшелік: сертификат беті (data-printable) — тек сертификаттың өзі басылады */
+  html:has([data-printable]),
+  html:has([data-printable]) body {
+    display: block !important;
+    background: #fff !important;
+  }
+  html:has([data-printable]) body * {
+    visibility: hidden;
+  }
+  [data-printable],
+  [data-printable] * {
+    visibility: visible;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  [data-printable] {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    box-shadow: none !important;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
 }
 
 @layer base {

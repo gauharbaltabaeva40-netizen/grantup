@@ -615,25 +615,6 @@ await check("admin_students: search + access filter + paging", async () => {
   await expectFail(as("authenticated", admin.id, `select * from admin_students()`));
 });
 
-await check("duels: players read own duel only, no API writes, duel attempts allowed", async () => {
-  const [{ id: subject }] = await q(`select id from subjects limit 1`);
-  const [{ id: qid }] = await q(`select id from questions limit 1`);
-  const [d] = await q(
-    `insert into duels (code, subject_id, locale, question_ids, creator_id, opponent_id) values ('ABC234', $1, 'kk', array[$2::uuid], $3, $4) returning id`,
-    [subject, qid, s1.id, s2.id],
-  );
-  const mine = await as("authenticated", s1.id, `select id from duels`);
-  const theirs = await as("authenticated", s2.id, `select id from duels`);
-  const other = await as("authenticated", admin.id, `select id from duels`);
-  assert(mine.length === 1 && theirs.length === 1 && other.length === 0, JSON.stringify({ mine, theirs, other }));
-  await expectFail(as("authenticated", s1.id, `insert into duels (code, locale, question_ids, creator_id) values ('XYZ234', 'kk', array['${qid}'::uuid], '${s1.id}')`));
-  await expectFail(as("authenticated", s1.id, `update duels set winner_id = '${s1.id}' where id = '${d.id}'`).then((r) => { if (!r.length) throw new Error("no rows"); return r; }));
-  await expectFail(q(`insert into duels (code, locale, question_ids, creator_id, opponent_id) values ('SAME23', 'kk', array[$1::uuid], $2, $2)`, [qid, s1.id]));
-  await expectFail(q(`insert into duels (code, locale, question_ids, creator_id) values ('bad', 'kk', array[$1::uuid], $2)`, [qid, s1.id]));
-  const [a] = await q(`insert into attempts (user_id, kind, locale, question_ids) values ($1, 'duel', 'kk', array[$2::uuid]) returning kind`, [s1.id, qid]);
-  assert(a.kind === "duel", JSON.stringify(a));
-});
-
 await check("password reset: student cannot clear must_change_password; revoke function is server-only", async () => {
   await q(`update profiles set must_change_password = true where id = $1`, [s1.id]);
   await expectFail(as("authenticated", s1.id, `update profiles set must_change_password = false where id = '${s1.id}'`));
@@ -652,6 +633,24 @@ await check("proctoring: phone and looking-away events counted", async () => {
   }
   const [r] = await q(`select phone_detected::int, looking_away::int from admin_proctoring_attempts(10, 0, $1)`, [u.id]);
   assert(r.phone_detected === 2 && r.looking_away === 1, JSON.stringify(r));
+});
+
+await check("certificates: owner reads own only, no API writes, code format; dismissed column exists", async () => {
+  const [u] = await q(`insert into auth.users (email) values ('cert@test.kz') returning id`);
+  const [m] = await q(`select id from mock_exams limit 1`);
+  const [a] = await q(`insert into attempts (user_id, kind, locale, mock_exam_id, status) values ($1, 'mock', 'kk', $2, 'finished') returning id`, [u.id, m.id]);
+  await q(`insert into certificates (code, attempt_id, user_id, student_name, score, max_score, exam_date) values ('ABCDEFGH23', $1, $2, 'Тест Оқушы', 101, 140, now())`, [a.id, u.id]);
+  const own = await as("authenticated", u.id, `select code from certificates`);
+  const other = await as("authenticated", s1.id, `select code from certificates where code = 'ABCDEFGH23'`);
+  assert(own.length === 1 && other.length === 0, JSON.stringify({ own, other }));
+  await expectFail(as("authenticated", u.id, `update certificates set score = 140`).then((r) => { if (!r.length) throw new Error("no rows"); return r; }));
+  await expectFail(q(`insert into certificates (code, attempt_id, user_id, student_name, score, max_score, exam_date) values ('bad', $1, $2, 'x', 1, 1, now())`, [a.id, u.id]));
+  await expectFail(q(`insert into certificates (code, attempt_id, user_id, student_name, score, max_score, exam_date) values ('ZZZZZZZZ23', $1, $2, 'x', 1, 1, now())`, [a.id, u.id]));
+  await q(`insert into proctoring_events (attempt_id, user_id, type, dismissed_at) values ($1, $2, 'phone_detected', now())`, [a.id, u.id]);
+  const [d] = await q(`select count(*)::int n from proctoring_events where attempt_id = $1 and dismissed_at is not null`, [a.id]);
+  assert(d.n === 1, JSON.stringify(d));
+  const [t] = await q(`select to_regclass('public.duels') is null as gone`);
+  assert(t.gone === true, "duels table must be dropped");
 });
 
 console.log(failures ? `\n${failures} FAILED` : "\nall passed");

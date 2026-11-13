@@ -4,7 +4,7 @@
 export const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/check-email"];
 
 /** Кірусіз де, кірген күйде де ашылатын беттер. */
-export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest", "/api/cron"];
+export const PUBLIC_ROUTES = ["/auth/confirm", "/reset-password", "/manifest.webmanifest", "/api/cron", "/verify"];
 
 /** Ашық басты беттің ішкі маршруты: «/» және «/ru» осыған rewrite жасалады. */
 export const LANDING_PATH = "/landing";

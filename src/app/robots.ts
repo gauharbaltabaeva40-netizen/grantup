@@ -25,6 +25,7 @@ export default function robots(): MetadataRoute.Robots {
         "/forgot-password",
         "/reset-password",
         "/styleguide",
+        "/verify/",
       ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
