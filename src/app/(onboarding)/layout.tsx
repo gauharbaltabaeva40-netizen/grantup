@@ -16,7 +16,6 @@ export default async function OnboardingLayout({ children }: { children: React.R
   return (
     <WatermarkProvider mark={await getWatermarkText()}>
     <div className="relative isolate min-h-dvh">
-      <div aria-hidden className="absolute -top-40 left-1/2 -z-10 h-80 w-[40rem] -translate-x-1/2 rounded-full bg-brand-gradient opacity-20 blur-3xl" />
       <header className="mx-auto flex h-16 w-full max-w-2xl items-center gap-2 px-4 pt-[env(safe-area-inset-top)]">
         <Logo size={34} href="#" className="pointer-events-none" />
         <div className="ml-auto flex items-center gap-1">

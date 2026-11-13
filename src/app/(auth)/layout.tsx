@@ -9,7 +9,6 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
-      <div aria-hidden className="absolute -top-40 left-1/2 -z-10 h-80 w-[40rem] -translate-x-1/2 rounded-full bg-brand-gradient opacity-20 blur-3xl dark:opacity-30" />
       <header className="mx-auto flex h-16 w-full max-w-5xl items-center gap-2 px-4 pt-[env(safe-area-inset-top)]">
         <Logo size={34} />
         <div className="ml-auto flex items-center gap-1">
@@ -23,7 +22,11 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             {t("demoNotice")}
           </p>
         )}
-        <div className="rounded-3xl bg-card p-6 shadow-soft sm:p-8">{children}</div>
+        <div className="relative rounded-2xl border bg-card p-6 pl-10 shadow-soft sm:p-8 sm:pl-14">
+          {/* Дәптердің қызыл шет сызығы */}
+          <div aria-hidden className="absolute inset-y-0 left-5 w-px bg-pen/35 sm:left-8" />
+          {children}
+        </div>
       </main>
     </div>
   );

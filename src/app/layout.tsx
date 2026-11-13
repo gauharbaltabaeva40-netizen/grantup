@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { Caveat, Literata, Manrope } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -11,6 +11,19 @@ import "./globals.css";
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  display: "swap",
+});
+
+// «Емтихан қағазы»: тақырыптарға кітаптық serif, қызыл қалам жазуларына қолжазба шрифт
+const literata = Literata({
+  variable: "--font-literata",
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  display: "swap",
+});
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  weight: ["600", "700"],
   display: "swap",
 });
 
@@ -45,8 +58,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f8ff" },
-    { media: "(prefers-color-scheme: dark)", color: "#070b1a" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf8f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1322" },
   ],
 };
 
@@ -54,7 +67,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const [locale, nonce] = await Promise.all([getLocale(), headers().then((h) => h.get("x-nonce") ?? undefined)]);
 
   return (
-    <html lang={locale} className={manrope.variable} suppressHydrationWarning>
+    <html lang={locale} className={`${manrope.variable} ${literata.variable} ${caveat.variable}`} suppressHydrationWarning>
       <body>
         <NextIntlClientProvider>
           <Providers nonce={nonce}>{children}</Providers>

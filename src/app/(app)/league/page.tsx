@@ -37,7 +37,7 @@ export default async function LeaguePage() {
       <PageHeader title={t("title")} description={t("description")} />
 
       {/* Лига белгісі */}
-      <section className="flex items-center gap-4 rounded-2xl p-5 text-white shadow-soft" style={{ background: `linear-gradient(135deg, ${league.tier.color}, #0b1533)` }}>
+      <section className="flex items-center gap-4 rounded-2xl p-5 text-white shadow-soft" style={{ background: `linear-gradient(135deg, ${league.tier.color}, #14213d)` }}>
         <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/15">
           <Trophy className="size-9" aria-hidden />
         </div>

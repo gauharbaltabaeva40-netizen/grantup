@@ -58,7 +58,7 @@ export function PublicShell({ locale, path, children }: { locale: Locale; path: 
               href={localePath(l, path)}
               hrefLang={l}
               aria-current={l === locale ? "true" : undefined}
-              className={cn("rounded-full px-2.5 py-1.5", l === locale ? "bg-[#0047ff] text-white" : "text-muted-foreground hover:text-foreground")}
+              className={cn("rounded-full px-2.5 py-1.5", l === locale ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
               {localeLabels[l].short}
             </a>

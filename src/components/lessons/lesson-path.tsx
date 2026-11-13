@@ -9,7 +9,7 @@ const OFFSETS = [0, 44, 64, 44, 0, -44, -64, -44];
 
 const nodeStyles: Record<LessonStatus, string> = {
   completed: "bg-success text-white shadow-[0_6px_0_0_#15803d]",
-  current: "bg-brand-gradient text-white shadow-[0_6px_0_0_#0036c4] ring-4 ring-primary/25",
+  current: "bg-brand-gradient text-white shadow-[0_6px_0_0_#0f1f4d] ring-4 ring-primary/25",
   available: "bg-card text-primary border-2 border-primary/40 shadow-[0_6px_0_0_var(--border)]",
   locked: "bg-muted text-muted-foreground shadow-[0_6px_0_0_var(--border)]",
 };

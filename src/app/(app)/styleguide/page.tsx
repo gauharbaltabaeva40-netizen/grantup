@@ -72,14 +72,14 @@ $$ax^2 + bx + c = 0, \\quad a \\ne 0$$
 | $30^\\circ$ | $\\frac{1}{2}$ | $\\frac{\\sqrt{3}}{2}$ |`;
 
 const swatches = [
-  { name: "brand-sky", className: "bg-brand-sky", hex: "#0A84FF" },
-  { name: "brand / primary", className: "bg-brand", hex: "#0047FF" },
-  { name: "brand-violet", className: "bg-brand-violet", hex: "#7B3FF2" },
-  { name: "success", className: "bg-success", hex: "#22C55E" },
-  { name: "danger", className: "bg-danger", hex: "#EF4444" },
-  { name: "streak", className: "bg-streak", hex: "#F59E0B" },
-  { name: "background", className: "bg-background ring-1 ring-border", hex: "#F5F8FF" },
-  { name: "gradient", className: "bg-brand-gradient", hex: "135°" },
+  { name: "brand-sky", className: "bg-brand-sky", hex: "#3A5BB8" },
+  { name: "brand / primary", className: "bg-brand", hex: "#1D3A8A" },
+  { name: "brand-violet", className: "bg-brand-violet", hex: "#D9482B" },
+  { name: "success", className: "bg-success", hex: "#2F9E5F" },
+  { name: "danger", className: "bg-danger", hex: "#C02626" },
+  { name: "streak", className: "bg-streak", hex: "#E0861A" },
+  { name: "background", className: "bg-background ring-1 ring-border", hex: "#FBF8F1" },
+  { name: "gradient", className: "bg-brand-gradient", hex: "140°" },
 ];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

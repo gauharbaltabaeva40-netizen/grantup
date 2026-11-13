@@ -10,7 +10,7 @@ export function Explanation({ text, className }: { text?: string | null; classNa
 
   return (
     <div className={cn("animate-in fade-in slide-in-from-bottom-1 rounded-2xl border border-brand-violet/20 bg-brand-violet/5 p-3.5 duration-300", className)}>
-      <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-brand-violet dark:text-[#b69bff]">
+      <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-brand-violet dark:text-[#ff9a80]">
         <Lightbulb className="size-4" aria-hidden />
         {t("why")}
       </p>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Check, X } from "lucide-react";
+import { PenCheck } from "@/components/brand/pen-marks";
 import { Markdown } from "@/components/content/markdown";
 import type { QuizQuestion } from "@/lib/quiz/types";
 import { cn } from "@/lib/utils";
@@ -73,7 +74,8 @@ export function QuestionCard({
                   className={cn(
                     "grid size-8 shrink-0 place-items-center text-sm font-bold",
                     multiple ? "rounded-lg" : "rounded-full",
-                    state === "idle" && "bg-muted text-muted-foreground",
+                    // Жауап парағындағы дөңгелек сияқты: бос — жиегі ғана, белгіленген — сиямен боялған
+                    state === "idle" && "border-[1.5px] border-input text-muted-foreground",
                     state === "selected" && "bg-primary text-primary-foreground",
                     state === "correct" && "bg-success text-white",
                     state === "wrong" && "bg-danger text-white",
@@ -84,6 +86,8 @@ export function QuestionCard({
                 <Markdown inline className="min-w-0 flex-1 text-[15px]">
                   {option.content}
                 </Markdown>
+                {/* Мұғалімнің қызыл қаламмен «дұрыс» белгісі */}
+                {state === "correct" && <PenCheck className="h-6 w-7 shrink-0" delay={0.1} />}
               </button>
             </li>
           );

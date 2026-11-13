@@ -23,7 +23,7 @@ export type AdminTopic = { id: string; title_kk: string; title_ru: string; is_pu
 
 export function SubjectForm({ subject }: { subject: AdminSubject }) {
   const { pending, run } = useAdminAction();
-  const [values, setValues] = useState({ title_kk: subject.title_kk, title_ru: subject.title_ru, color: subject.color ?? "#0047ff" });
+  const [values, setValues] = useState({ title_kk: subject.title_kk, title_ru: subject.title_ru, color: subject.color ?? "#1d3a8a" });
 
   return (
     <form

@@ -90,7 +90,7 @@ export default async function UbtGuidePage() {
                   <tr key={s.name}>
                     <th scope="row" className="px-4 py-3 text-left font-semibold">
                       {s.name}
-                      <span className={cn("ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold", s.mandatory ? "bg-secondary text-primary" : "bg-brand-violet/10 text-brand-violet dark:text-[#b69bff]")}>
+                      <span className={cn("ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold", s.mandatory ? "bg-secondary text-primary" : "bg-brand-violet/10 text-brand-violet dark:text-[#ff9a80]")}>
                         {s.mandatory ? g.mandatory : g.profile}
                       </span>
                     </th>
@@ -163,11 +163,11 @@ export default async function UbtGuidePage() {
           </div>
         </section>
 
-        <section className="relative isolate mt-12 overflow-hidden rounded-[2rem] bg-[#070b1a] px-6 py-10 text-center text-white">
-          <div aria-hidden className="pointer-events-none absolute -top-20 left-1/4 -z-10 size-72 rounded-full bg-[#0a84ff]/30 blur-3xl" />
+        <section className="relative isolate mt-12 overflow-hidden rounded-2xl bg-brand-gradient px-6 py-10 text-center text-white shadow-brand">
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07] [background-image:linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] [background-size:24px_24px]" />
           <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{g.ctaTitle}</h2>
           <p className="mx-auto mt-2 max-w-lg text-white/70">{g.ctaText}</p>
-          <Link href="/signup" className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-white px-6 font-extrabold text-[#070b1a] transition-transform hover:-translate-y-0.5">
+          <Link href="/signup" className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-[#fffdf8] px-6 font-extrabold text-[#14213d] shadow-[4px_4px_0_#ff8466] transition-all hover:-translate-y-0.5">
             {g.cta} <ArrowRight className="size-5" aria-hidden />
           </Link>
         </section>

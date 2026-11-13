@@ -19,7 +19,7 @@ export default async function VerifyCertificatePage({ params }: { params: Promis
   const url = `${siteUrl}/verify/${code.toUpperCase()}`;
 
   return (
-    <div className="min-h-dvh bg-[#eef2fb] px-4 py-8 sm:py-12 dark:bg-[#070b1a]">
+    <div className="min-h-dvh bg-background px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-4xl space-y-5">
         <Link href="/" className="inline-block text-sm font-bold text-primary print:hidden">
           ← GrantUp.kz

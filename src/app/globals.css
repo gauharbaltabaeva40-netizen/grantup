@@ -15,7 +15,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-manrope);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-heading: var(--font-manrope);
+  --font-heading: var(--font-literata), Georgia, serif;
+  --font-serif: var(--font-literata), Georgia, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -53,6 +54,7 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-streak: var(--streak);
+  --color-pen: var(--pen);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -62,99 +64,120 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  --shadow-soft: 0 1px 2px rgb(11 21 51 / 0.04), 0 8px 24px -8px rgb(11 21 51 / 0.08);
-  --shadow-brand: 0 12px 32px -12px rgb(0 71 255 / 0.55);
+  --shadow-soft: 0 1px 0 rgb(20 33 61 / 0.04), 0 6px 18px -10px rgb(20 33 61 / 0.16);
+  --shadow-brand: 0 2px 0 rgb(20 33 61 / 0.12), 0 14px 28px -16px rgb(20 33 61 / 0.55);
 }
 
 :root {
-  --brand-sky: #0a84ff;
-  --brand: #0047ff;
-  --brand-violet: #7b3ff2;
-  --success: #22c55e;
-  --danger: #ef4444;
-  --streak: #f59e0b;
+  /*
+   * «Емтихан қағазы» палитрасы: ақшыл қағаз, қара көк сия, қызыл қалам.
+   * brand  — сия (негізгі әрекет), brand-sky — ашығырақ сия, brand-violet — ҚЫЗЫЛ ҚАЛАМ (акцент, белгі, мөр).
+   */
+  --brand-sky: #3a5bb8;
+  --brand: #1d3a8a;
+  --brand-violet: #d9482b;
+  --pen: #c8371f;
+  --paper-line: rgb(29 58 138 / 0.055);
+  --success: #2f9e5f;
+  --danger: #c02626;
+  --streak: #e0861a;
 
-  --background: #f5f8ff;
-  --foreground: #0b1533;
-  --card: #ffffff;
-  --card-foreground: #0b1533;
-  --popover: #ffffff;
-  --popover-foreground: #0b1533;
-  --primary: #0047ff;
-  --primary-foreground: #ffffff;
-  --secondary: #e8efff;
-  --secondary-foreground: #0b1533;
-  --muted: #eef2fb;
-  --muted-foreground: #5b6785;
-  --accent: #e8efff;
-  --accent-foreground: #0039cc;
-  --destructive: #ef4444;
-  --border: #e2e8f5;
-  --input: #d6deef;
-  --ring: #0047ff;
-  --chart-1: #0047ff;
-  --chart-2: #7b3ff2;
-  --chart-3: #0a84ff;
-  --chart-4: #22c55e;
-  --chart-5: #f59e0b;
-  --radius: 0.7rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0b1533;
-  --sidebar-primary: #0047ff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8efff;
-  --sidebar-accent-foreground: #0039cc;
-  --sidebar-border: #e2e8f5;
-  --sidebar-ring: #0047ff;
+  --background: #fbf8f1;
+  --foreground: #14213d;
+  --card: #fffdf8;
+  --card-foreground: #14213d;
+  --popover: #fffdf8;
+  --popover-foreground: #14213d;
+  --primary: #1d3a8a;
+  --primary-foreground: #fffdf8;
+  --secondary: #ebeef7;
+  --secondary-foreground: #14213d;
+  --muted: #f3eee2;
+  --muted-foreground: #5c6276;
+  --accent: #ebeef7;
+  --accent-foreground: #1d3a8a;
+  --destructive: #c02626;
+  --border: #e6dfcd;
+  --input: #d8cfb9;
+  --ring: #1d3a8a;
+  --chart-1: #1d3a8a;
+  --chart-2: #d9482b;
+  --chart-3: #3a5bb8;
+  --chart-4: #2f9e5f;
+  --chart-5: #e0861a;
+  --radius: 0.6rem;
+  --sidebar: #fffdf8;
+  --sidebar-foreground: #14213d;
+  --sidebar-primary: #1d3a8a;
+  --sidebar-primary-foreground: #fffdf8;
+  --sidebar-accent: #ebeef7;
+  --sidebar-accent-foreground: #1d3a8a;
+  --sidebar-border: #e6dfcd;
+  --sidebar-ring: #1d3a8a;
 }
 
+/* Түнгі нұсқа: қою көк қағаз, кремді «бор», ашық қызыл қалам */
 .dark {
-  --brand-sky: #3d9dff;
-  --brand: #3b6bff;
-  --brand-violet: #9466ff;
+  --brand-sky: #8fa6ec;
+  --brand: #5b7be0;
+  --brand-violet: #ff7a5c;
+  --pen: #ff8466;
+  --paper-line: rgb(255 255 255 / 0.03);
 
-  --background: #070b1a;
-  --foreground: #eaf0ff;
-  --card: #0f1630;
-  --card-foreground: #eaf0ff;
-  --popover: #121a38;
-  --popover-foreground: #eaf0ff;
-  --primary: #3b6bff;
-  --primary-foreground: #ffffff;
-  --secondary: #1a2347;
-  --secondary-foreground: #eaf0ff;
-  --muted: #161e3d;
-  --muted-foreground: #93a0c4;
-  --accent: #1a2347;
-  --accent-foreground: #b9caff;
+  --background: #0e1322;
+  --foreground: #ede6d6;
+  --card: #151b2e;
+  --card-foreground: #ede6d6;
+  --popover: #182036;
+  --popover-foreground: #ede6d6;
+  --primary: #5b7be0;
+  --primary-foreground: #0e1322;
+  --secondary: #1e2742;
+  --secondary-foreground: #ede6d6;
+  --muted: #1a2238;
+  --muted-foreground: #a3a9ba;
+  --accent: #1e2742;
+  --accent-foreground: #c3d0ff;
   --destructive: #f87171;
-  --border: rgb(255 255 255 / 0.08);
-  --input: rgb(255 255 255 / 0.14);
-  --ring: #3b6bff;
-  --chart-1: #3b6bff;
-  --chart-2: #9466ff;
-  --chart-3: #3d9dff;
-  --chart-4: #22c55e;
-  --chart-5: #f59e0b;
-  --sidebar: #0b1126;
-  --sidebar-foreground: #eaf0ff;
-  --sidebar-primary: #3b6bff;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a2347;
-  --sidebar-accent-foreground: #b9caff;
-  --sidebar-border: rgb(255 255 255 / 0.08);
-  --sidebar-ring: #3b6bff;
+  --border: rgb(237 230 214 / 0.09);
+  --input: rgb(237 230 214 / 0.16);
+  --ring: #8fa6ec;
+  --chart-1: #8fa6ec;
+  --chart-2: #ff7a5c;
+  --chart-3: #5b7be0;
+  --chart-4: #4ade80;
+  --chart-5: #f5a524;
+  --sidebar: #11172a;
+  --sidebar-foreground: #ede6d6;
+  --sidebar-primary: #5b7be0;
+  --sidebar-primary-foreground: #0e1322;
+  --sidebar-accent: #1e2742;
+  --sidebar-accent-foreground: #c3d0ff;
+  --sidebar-border: rgb(237 230 214 / 0.09);
+  --sidebar-ring: #8fa6ec;
 }
 
-/* Негізгі градиент: көктен күлгінге, диагональ */
+/* «Сия» фоны: қою көк, өте жұмсақ диагональ (бұрынғы көк-күлгін градиенттің орнына) */
 @utility bg-brand-gradient {
-  background-image: linear-gradient(135deg, #0a84ff 0%, #0047ff 50%, #7b3ff2 100%);
+  background-image: linear-gradient(140deg, #24448f 0%, #1d3a8a 45%, #14213d 100%);
 }
 
+/* Бренд сөзі «қызыл қаламмен» */
 @utility text-brand-gradient {
-  background-image: linear-gradient(135deg, var(--brand-sky) 0%, var(--brand) 50%, var(--brand-violet) 100%);
-  background-clip: text;
-  color: transparent;
+  color: var(--pen);
+}
+
+/* Тор сызықты қағаз (дәптер) */
+@utility paper-grid {
+  background-image:
+    linear-gradient(var(--paper-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Қолжазба (қызыл қалам жазуы) */
+@utility font-hand {
+  font-family: var(--font-caveat), "Comic Sans MS", cursive;
 }
 
 /* Markdown мазмұны (конспект, сұрақтар, түсіндірмелер) */
@@ -182,7 +205,7 @@
     @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
   }
   .markdown pre {
-    @apply overflow-x-auto rounded-xl bg-[#0b1533] p-4 text-sm leading-6 text-[#eaf0ff];
+    @apply overflow-x-auto rounded-xl bg-[#14213d] p-4 text-sm leading-6 text-[#eaf0ff];
   }
   .markdown pre code {
     @apply bg-transparent p-0 text-inherit;
@@ -204,7 +227,7 @@
     @apply inline;
   }
   .markdown-inline pre {
-    @apply mt-2 overflow-x-auto rounded-xl bg-[#0b1533] p-3 text-sm text-[#eaf0ff];
+    @apply mt-2 overflow-x-auto rounded-xl bg-[#14213d] p-3 text-sm text-[#eaf0ff];
   }
   .markdown-inline code {
     @apply rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.9em];
@@ -277,18 +300,19 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    /* Жұмсақ градиент фон: көк (жоғары сол) → күлгін (жоғары оң) → көк (төмен). Қозғалмайды — назар бөлмейді. */
+    /* Емтихан қағазы: өте әлсіз тор сызық. Қозғалмайды — назар бөлмейді. */
     background-image:
-      radial-gradient(70rem 36rem at -10% -15%, rgb(10 132 255 / 0.11), transparent 60%),
-      radial-gradient(55rem 32rem at 110% -5%, rgb(123 63 242 / 0.1), transparent 58%),
-      radial-gradient(60rem 40rem at 50% 115%, rgb(0 71 255 / 0.07), transparent 62%);
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 24px 24px;
     background-attachment: fixed;
   }
-  .dark body {
-    background-image:
-      radial-gradient(70rem 36rem at -10% -15%, rgb(10 132 255 / 0.16), transparent 60%),
-      radial-gradient(55rem 32rem at 110% -5%, rgb(148 102 255 / 0.15), transparent 58%),
-      radial-gradient(60rem 40rem at 50% 115%, rgb(59 107 255 / 0.1), transparent 62%);
+  /* Үлкен тақырыптар — кітаптық serif (Literata), қалғаны Manrope */
+  h1,
+  h2 {
+    font-family: var(--font-heading);
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -365,16 +389,84 @@
     box-shadow 200ms ease;
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgb(11 21 51 / 0.05), 0 16px 32px -12px rgb(0 71 255 / 0.22);
+    box-shadow: 0 1px 0 rgb(20 33 61 / 0.06), 0 16px 30px -16px rgb(20 33 61 / 0.35);
   }
 }
 
 /* Сынақ ҰБТ экранының фоны: бірқалыпты, жұмсақ (сұраққа назар) */
 .exam-backdrop {
-  background-image: linear-gradient(180deg, rgb(0 71 255 / 0.05), transparent 22rem);
+  background-image: linear-gradient(180deg, rgb(29 58 138 / 0.04), transparent 22rem);
+}
+
+/* Қызыл қаламмен астын сызу — әр жолдың астына жеке (көп жолды тақырыптарда да), солдан оңға «сызылады» */
+.pen-underline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 18' preserveAspectRatio='none'%3E%3Cpath d='M3 12.5C48 6 96 4.5 150 7.5S252 12 297 5' fill='none' stroke='%23c8371f' stroke-width='4.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.3em;
+  padding-bottom: 0.14em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: pen-sweep 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.3s both;
+}
+.dark .pen-underline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 18' preserveAspectRatio='none'%3E%3Cpath d='M3 12.5C48 6 96 4.5 150 7.5S252 12 297 5' fill='none' stroke='%23ff8466' stroke-width='4.5' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+@keyframes pen-sweep {
+  from {
+    background-size: 0% 0.3em;
+  }
+}
+
+/* Қызыл қалам: сызық «сызылады» (SVG path, pathLength=1) */
+@keyframes pen-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.pen-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pen-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: var(--pen-delay, 0.3s);
+}
+/* Мөр «басылады»: үлкейіп тұрып, қағазға түседі */
+@keyframes stamp-in {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--stamp-rotate, -12deg)) scale(1.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(var(--stamp-rotate, -12deg)) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(var(--stamp-rotate, -12deg)) scale(1);
+  }
+}
+.stamp-in {
+  opacity: 0;
+  animation: stamp-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+  animation-delay: var(--stamp-delay, 0.9s);
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .pen-underline {
+    animation: none !important;
+  }
+  .pen-draw {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+  .stamp-in {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: rotate(var(--stamp-rotate, -12deg));
+  }
   .reveal {
     animation: none !important;
   }
@@ -394,7 +486,7 @@
 .dark .text-primary:not(.bg-white),
 .dark .text-brand:not(.bg-white),
 .dark .hover\:text-primary:hover {
-  color: #7b9bff;
+  color: #a9bbf2;
 }
 
 /* Ақ тақырыпта ашық түсті (сары/жасыл/қызыл) МӘТІН ақ фонда оқылуы үшін қоюырақ реңкте (WCAG AA). */

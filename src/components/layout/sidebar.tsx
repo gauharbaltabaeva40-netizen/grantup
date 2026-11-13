@@ -15,9 +15,10 @@ function SidebarLink({ item, active, small }: { item: NavItem; active: boolean; 
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-xl px-3 font-semibold text-muted-foreground transition-colors outline-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
+        "relative flex items-center gap-3 rounded-xl px-3 font-semibold text-muted-foreground transition-colors outline-none hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
         small ? "h-10 text-sm" : "h-12 text-[15px]",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground",
+        // Белсенді пункт: сол жақта қызыл қалам белгісі
+        active && "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:inset-y-2.5 before:-left-4 before:w-[3px] before:rounded-r-full before:bg-pen",
       )}
     >
       <Icon className={cn(small ? "size-4" : "size-5", active && "text-primary")} strokeWidth={active ? 2.4 : 2} aria-hidden />

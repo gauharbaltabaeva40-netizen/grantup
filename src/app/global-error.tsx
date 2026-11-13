@@ -4,7 +4,7 @@
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="kk">
-      <body style={{ margin: 0, minHeight: "100dvh", display: "grid", placeItems: "center", fontFamily: "system-ui, sans-serif", background: "#f5f8ff", color: "#0b1533" }}>
+      <body style={{ margin: 0, minHeight: "100dvh", display: "grid", placeItems: "center", fontFamily: "system-ui, sans-serif", background: "#fbf8f1", color: "#14213d" }}>
         <main style={{ maxWidth: 420, padding: 24, textAlign: "center" }}>
           <h1 style={{ fontSize: 22, margin: "0 0 8px" }}>Бірдеңе дұрыс болмады</h1>
           <p style={{ margin: "0 0 4px", color: "#4b587a" }}>Деректеріңіз сақтаулы. Бетті қайта жүктеп көріңіз.</p>
@@ -12,7 +12,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
           <button
             type="button"
             onClick={reset}
-            style={{ border: 0, borderRadius: 16, padding: "12px 22px", fontSize: 16, fontWeight: 700, color: "#fff", background: "#0047ff", cursor: "pointer" }}
+            style={{ border: 0, borderRadius: 16, padding: "12px 22px", fontSize: 16, fontWeight: 700, color: "#fff", background: "#1d3a8a", cursor: "pointer" }}
           >
             Қайталау / Повторить
           </button>

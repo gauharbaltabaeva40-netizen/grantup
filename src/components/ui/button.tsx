@@ -19,9 +19,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // GrantUp: негізгі әрекет (градиент) және градиент фондағы ақ батырма
         brand:
-          "bg-brand-gradient text-white shadow-brand hover:brightness-110 focus-visible:ring-brand/40",
+          "bg-brand-gradient text-white shadow-brand hover:brightness-125 active:shadow-none focus-visible:ring-brand/40",
         white:
-          "bg-white text-brand shadow-soft hover:bg-white/90 dark:text-[#0047ff]",
+          "bg-white text-brand shadow-soft hover:bg-white/90 dark:text-[#1d3a8a]",
       },
       size: {
         default:

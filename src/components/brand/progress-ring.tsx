@@ -23,8 +23,7 @@ export function ProgressRing({ value, max = 100, size = 120, stroke = 10, classN
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="var(--brand-sky)" />
-            <stop offset="50%" stopColor="var(--brand)" />
-            <stop offset="100%" stopColor="var(--brand-violet)" />
+            <stop offset="100%" stopColor="var(--brand)" />
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--muted)" strokeWidth={stroke} />
