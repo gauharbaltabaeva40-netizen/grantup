@@ -67,7 +67,7 @@ export default async function AdminQuestionsPage({ searchParams }: { searchParam
               <Layers className="size-4" aria-hidden /> Контекстік мәтіндер
             </Link>
             <Link href="/admin/questions/import" className="flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-semibold hover:bg-muted">
-              <FileUp className="size-4" aria-hidden /> Excel/CSV импорт
+              <FileUp className="size-4" aria-hidden /> Импорт (мәтін / Excel)
             </Link>
             <Link
               href={`/admin/questions/new${subject ? `?subject=${subject}` : ""}`}
